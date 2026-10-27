@@ -24,3 +24,9 @@ Server membuat URL media bertanda tangan dengan masa aktif 10 menit; token bot t
 - Telegram tidak menggantikan backup independen. Penghapusan channel/bot/file dapat memutus akses.
 - Data bookmark/history lama di tabel D1 tetap ada, tetapi client Telegram baru memakai CloudStorage. Migrasi data lama belum dilakukan.
 - Bot token dan Channel ID tidak tersedia pada koneksi ini; webhook serta distribusi media belum aktif sebelum konfigurasi secrets.
+
+### Status koneksi dan webhook
+- Worker menyediakan `GET /api/telegram/status` yang hanya menampilkan status aman (`webhook`, `channel`, `error_code`, `checked_at`) tanpa token atau ID channel.
+- Migrasi `0004_telegram_setup.sql` menyimpan hasil satu kali pendaftaran webhook ke Telegram.
+- Handler `scheduled` akan mengecek webhook yang sudah ada, tidak mengganti webhook milik layanan lain, dan memvalidasi bot sebagai administrator channel.
+- Setelah status `webhook: ok`, pemicu Cron dapat dihapus karena kode mengabaikan pendaftaran ulang.
