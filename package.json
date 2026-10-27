@@ -1,0 +1,17 @@
+{
+  "name": "scanstoon",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check src/worker.js && node --check scripts/build.mjs && npm run build && node --check dist/worker.js",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "db:migrate": "wrangler d1 execute scanstoon-db --remote --file=./migrations/0001_init.sql",
+    "db:seed": "wrangler d1 execute scanstoon-db --remote --file=./migrations/0002_seed.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
