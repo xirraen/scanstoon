@@ -41,7 +41,8 @@ async function api(request,env,url) {
   const method=request.method;
   if (method==='GET' && url.pathname==='/api/telegram/status') {
     const row=await env.DB.prepare('SELECT status,channel_status,error_code,updated_at FROM telegram_setup_status WHERE id=1').first();
-    return good({webhook:row?.status||'pending',channel:row?.channel_status||'unverified',error_code:row?.error_code||null,checked_at:row?.updated_at||null});
+    const menu=await env.DB.prepare('SELECT status, error_code, updated_at FROM telegram_menu_setup WHERE id=1').first();
+    return good({webhook:row?.status||'pending',channel:row?.channel_status||'unverified',menu:menu?.status||'pending',menu_error:menu?.error_code||null,error_code:row?.error_code||null,checked_at:row?.updated_at||null});
   }
   if (url.pathname.startsWith('/api/storage/')) return await telegramStorageRoute(request,env,url);
   if (method==='GET' && url.pathname==='/api/home') {
@@ -154,6 +155,6 @@ export default {
     }catch(error){console.error('scanstoon_request_error',String(error));return fail(500,'SERVER_ERROR','Terjadi masalah pada server.');}
   },
   async scheduled(event,env,ctx){
-    ctx.waitUntil(telegramBootstrap(env));
+    ctx.waitUntil(Promise.all([telegramBootstrap(env),telegramMenuBootstrap(env)]));
   }
 };
