@@ -133,6 +133,7 @@ async function telegramMenuBootstrap(env){
   const token=env.TELEGRAM_BOT_TOKEN||env.TELEGRAM_TOKEN_BOT;
   if(!token){await record('blocked','','BOT_TOKEN_MISSING');return;}
   const target='https://scanstoon.ikomik-core.workers.dev';
+  const sameTarget=(value)=>{try{const u=new URL(value);return u.origin===target&&u.pathname==='/'&&!u.search&&!u.hash;}catch{return false;}};
   const api='https://api.telegram.org/bot'+token+'/';
   try{
     const call=async(method,body)=>{
@@ -144,13 +145,13 @@ async function telegramMenuBootstrap(env){
     const existing=await call('getChatMenuButton');
     if(!existing){await record('error','','MENU_READ_FAILED');return;}
     if(existing.type==='web_app'){
-      if(existing.web_app?.url===target){await record('ok',target,'');return;}
+      if(sameTarget(existing.web_app?.url)){await record('ok',target,'');return;}
       await record('blocked','','EXISTING_MENU_OTHER_URL');return;
     }
     const changed=await call('setChatMenuButton',{menu_button:{type:'web_app',text:'Buka Scanstoon',web_app:{url:target}}});
     if(changed!==true){await record('error','','MENU_WRITE_FAILED');return;}
     const confirmed=await call('getChatMenuButton');
-    if(confirmed?.type!=='web_app'||confirmed?.web_app?.url!==target){await record('error','','MENU_VERIFY_FAILED');return;}
+    if(confirmed?.type!=='web_app'||!sameTarget(confirmed?.web_app?.url)){await record('error','','MENU_VERIFY_FAILED_'+String(confirmed?.type||'unknown').slice(0,24));return;}
     await record('ok',target,'');
   }catch(error){
     // Error details may expose the token embedded in the Telegram API URL.
