@@ -39,6 +39,10 @@ async function api(request,env,url) {
   if (url.pathname==='/api/health') return good({status:'ok',version:'0.1.0',service:'scanstoon'});
   if (!env.DB) return fail(503,'DATABASE_UNAVAILABLE','Database belum dikonfigurasi.');
   const method=request.method;
+  if (method==='GET' && url.pathname==='/api/telegram/status') {
+    const row=await env.DB.prepare('SELECT status,channel_status,error_code,updated_at FROM telegram_setup_status WHERE id=1').first();
+    return good({webhook:row?.status||'pending',channel:row?.channel_status||'unverified',error_code:row?.error_code||null,checked_at:row?.updated_at||null});
+  }
   if (url.pathname.startsWith('/api/storage/')) return await telegramStorageRoute(request,env,url);
   if (method==='GET' && url.pathname==='/api/home') {
     const [popular,latest]=await Promise.all([
