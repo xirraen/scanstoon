@@ -39,6 +39,12 @@ async function api(request,env,url) {
   if (url.pathname==='/api/health') return good({status:'ok',version:'0.1.0',service:'scanstoon'});
   if (!env.DB) return fail(503,'DATABASE_UNAVAILABLE','Database belum dikonfigurasi.');
   const method=request.method;
+  if (method==='GET' && url.pathname==='/api/telegram/status') {
+    const row=await env.DB.prepare('SELECT status,channel_status,error_code,updated_at FROM telegram_setup_status WHERE id=1').first();
+    const menu=await env.DB.prepare('SELECT status, error_code, updated_at FROM telegram_menu_setup WHERE id=1').first();
+    return good({webhook:row?.status||'pending',channel:row?.channel_status||'unverified',menu:menu?.status||'pending',menu_error:menu?.error_code||null,error_code:row?.error_code||null,checked_at:row?.updated_at||null});
+  }
+  if (url.pathname.startsWith('/api/storage/')) return await telegramStorageRoute(request,env,url);
   if (method==='GET' && url.pathname==='/api/home') {
     const [popular,latest]=await Promise.all([
       env.DB.prepare('SELECT * FROM comics ORDER BY score DESC LIMIT 8').all(),
@@ -120,6 +126,7 @@ async function telegramWebhook(request,env) {
   if(!secureEqual(request.headers.get('X-Telegram-Bot-Api-Secret-Token')||'',env.TELEGRAM_WEBHOOK_SECRET)) return fail(403,'FORBIDDEN','Webhook secret tidak valid.');
   let update;
   try{update=await request.json();}catch{return fail(400,'BAD_BODY','JSON tidak valid.');}
+  if(update?.channel_post) return await telegramStorageUpdate(update.channel_post,env);
   const chat=update?.message?.chat?.id;
   const command=String(update?.message?.text||'').trim().split(/\s+/)[0].split('@')[0];
   if(chat && ['/start','/app','/help'].includes(command)) {
@@ -131,6 +138,7 @@ async function telegramWebhook(request,env) {
 }
 export default {
   async fetch(request,env){
+    env={...env,TELEGRAM_BOT_TOKEN:env.TELEGRAM_BOT_TOKEN||env.TELEGRAM_TOKEN_BOT};
     try{
       const url=new URL(request.url);
       if(url.pathname.startsWith('/api/')) return await api(request,env,url);
@@ -145,5 +153,8 @@ export default {
         'Content-Security-Policy':"default-src 'none'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://web.telegram.org https://*.telegram.org"
       }});
     }catch(error){console.error('scanstoon_request_error',String(error));return fail(500,'SERVER_ERROR','Terjadi masalah pada server.');}
+  },
+  async scheduled(event,env,ctx){
+    ctx.waitUntil(Promise.all([telegramBootstrap(env),telegramMenuBootstrap(env)]));
   }
 };

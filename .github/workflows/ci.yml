@@ -1,0 +1,47 @@
+name: Scanstoon CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and worker build
+        run: npm run check
+      - name: API security smoke tests
+        run: node --test tests/*.test.mjs
+
+      - name: Live Cloudflare C5 endpoint smoke test
+        run: |
+          python - <<'PY'
+          import json
+          from urllib.request import urlopen, Request
+          from urllib.error import HTTPError
+
+          base = 'https://scanstoon.ikomik-core.workers.dev'
+          for path in ['/api/health', '/api/telegram/status', '/api/comics?limit=1']:
+              try:
+                  req = Request(base + path, headers={'User-Agent':'Scanstoon-CI/1.0', 'Accept':'application/json'})
+                  with urlopen(req, timeout=20) as response:
+                      assert response.status == 200, (path, response.status)
+                      body = json.load(response)
+              except HTTPError as err:
+                  print('LIVE HTTP ERROR:', path, err.code, 'Server:', err.headers.get('Server'),
+                        'CF-Ray:', err.headers.get('CF-Ray'))
+                  print('BODY:', err.read(1500).decode('utf-8', errors='replace'))
+                  raise
+              assert body.get('success') is True, (path, body)
+              if path == '/api/health':
+                  assert body['data']['status'] == 'ok'
+              if path == '/api/telegram/status':
+                  assert body['data']['webhook'] == 'ok'
+                  assert body['data']['channel'] == 'admin'
+          print('Cloudflare C5 smoke tests passed')
+          PY

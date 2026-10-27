@@ -6,8 +6,8 @@ Telegram Mini App untuk katalog dan tracker komik orisinal. **MVP live Cloudflar
 - Katalog responsif, filter tipe, pencarian dan sorting.
 - Detail, genre dan daftar chapter untuk karya contoh orisinal.
 - Reader preview vertikal berbasis visual orisinal (bukan materi komik berhak cipta).
-- Bookmark dan histori lokal untuk pengunjung browser.
-- Bookmark dan histori tersinkron D1 untuk pengguna Telegram (memerlukan bot token).
+- Bookmark dan histori lokal untuk pengunjung browser (tanpa Telegram).
+- Bookmark dan progres baca tersinkron lewat Telegram Mini App CloudStorage; endpoint D1 lama tetap tersedia untuk kompatibilitas.
 - Validasi HMAC-SHA256 Telegram initData pada server.
 - Webhook Telegram dengan secret header, perintah /start, /app, /help.
 
@@ -36,3 +36,14 @@ Set \`APP_URL\` ke URL produksi melalui konfigurasi Wrangler bila ingin tombol M
 **Keamanan:** Endpoint baca katalog bersifat publik, penyimpanan user memerlukan Telegram initData valid dan tidak menerima user ID dari klien. Tidak ada token demo yang membuka API privat.
 
 **Catatan konten:** Semua data di migration seed adalah judul fiksi orisinal khusus demonstrasi. Visual reader juga contoh orisinal, bukan chapter komik lain. Hanya gunakan materi yang dimiliki atau dilisensikan. R2 belum aktif di akun C5, sehingga storage media belum disiapkan.
+
+## Telegram sebagai penyimpanan (fitur baru)
+Media komik orisinal/berlisensi disimpan di channel Telegram privat. Referensi `file_id` tersimpan di D1 C5; bookmark dan progres baru milik pengguna Telegram disimpan melalui Telegram Mini App CloudStorage, bukan melalui endpoint D1 lama. Endpoint API lama dipertahankan demi kompatibilitas. Baca `TELEGRAM_STORAGE.md` untuk format unggahan dan konfigurasi bot. Sebelum bot dan secret disetel, mode preview tetap berjalan.
+
+## Pemeriksaan otomatis
+
+GitHub Actions memeriksa hasil build Worker dan pengamanan endpoint dengan `npm run check && node --test tests/*.test.mjs`.
+
+## Bot Telegram
+
+Bot aktif menggunakan `@ScanstoonBot` dengan webhook Cloudflare C5. Tombol menu Mini App dikonfigurasikan otomatis ke alamat Worker. Status publik yang aman untuk diperiksa adalah `/api/telegram/status` (tanpa token). Untuk input konten channel gunakan format di `TELEGRAM_STORAGE.md`.
