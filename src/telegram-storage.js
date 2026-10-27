@@ -72,3 +72,48 @@ async function telegramStorageRoute(request,env,url){
   }
   return fail(404,'NOT_FOUND','Storage endpoint tidak ditemukan.');
 }
+
+
+// One-time webhook bootstrap, invoked by a temporary Cloudflare Cron Trigger.
+// It never reads secret values back to a client, and refuses to displace another webhook.
+async function telegramBootstrap(env) {
+  const db=env.DB;
+  async function record(status,webhookUrl,username,channelStatus,errorCode){
+    await db.prepare("INSERT INTO telegram_setup_status(id,status,webhook_url,bot_username,channel_status,error_code,updated_at) VALUES(1,?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(id) DO UPDATE SET status=excluded.status,webhook_url=excluded.webhook_url,bot_username=excluded.bot_username,channel_status=excluded.channel_status,error_code=excluded.error_code,updated_at=CURRENT_TIMESTAMP").bind(status,webhookUrl||'',username||'',channelStatus||'',errorCode||'').run();
+  }
+  const previous=await db.prepare("SELECT status FROM telegram_setup_status WHERE id=1").first();
+  if(previous?.status==='ok') return;
+  const token=env.TELEGRAM_BOT_TOKEN||env.TELEGRAM_TOKEN_BOT;
+  const hookSecret=env.TELEGRAM_WEBHOOK_SECRET;
+  if(!token||!hookSecret){await record('blocked','','','','MISSING_TOKEN_OR_SECRET');return;}
+  const target='https://scanstoon.ikomik-core.workers.dev/telegram/webhook';
+  const api='https://api.telegram.org/bot'+token+'/';
+  let username='',channelStatus='unverified';
+  try{
+    const call=async(method,payload)=>{
+      const response=await fetch(api+method,payload?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}:{method:'GET'});
+      if(!response.ok)return null;
+      const json=await response.json();
+      return json?.ok?json.result:null;
+    };
+    const me=await call('getMe');
+    if(!me||!Number.isSafeInteger(me.id)){await record('blocked','','','','BOT_TOKEN_INVALID');return;}
+    username=String(me.username||'').slice(0,120);
+    if(env.TELEGRAM_CHANNEL_ID){
+      const member=await call('getChatMember',{chat_id:env.TELEGRAM_CHANNEL_ID,user_id:me.id});
+      channelStatus=member&&['administrator','creator'].includes(member.status)?'admin':'not_admin_or_inaccessible';
+    }else channelStatus='channel_missing';
+    const previousWebhook=await call('getWebhookInfo');
+    if(!previousWebhook){await record('error','',username,channelStatus,'WEBHOOK_INFO_FAILED');return;}
+    const current=String(previousWebhook.url||'');
+    if(current&&current!==target){await record('blocked',current,username,channelStatus,'EXISTING_WEBHOOK_OTHER_URL');return;}
+    const applied=await call('setWebhook',{url:target,secret_token:hookSecret,allowed_updates:['message','channel_post'],drop_pending_updates:false});
+    if(applied!==true){await record('error',current,username,channelStatus,'SET_WEBHOOK_FAILED');return;}
+    const confirmed=await call('getWebhookInfo');
+    if(!confirmed||confirmed.url!==target){await record('error',current,username,channelStatus,'WEBHOOK_VERIFICATION_FAILED');return;}
+    await record('ok',target,username,channelStatus,'');
+  }catch(err){
+    // No exception details: Telegram's internal fetch URL contains a bot token.
+    await record('error','',username,channelStatus,'TELEGRAM_API_UNAVAILABLE');
+  }
+}
