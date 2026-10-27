@@ -41,9 +41,17 @@
 'use strict';
 var tg=window.Telegram&&window.Telegram.WebApp||null;try{if(tg){tg.ready();tg.expand();}}catch(e){}
 var initData=tg&&tg.initData||'';
+
+var cloud=tg&&tg.CloudStorage||null;
+function tgKeys(){return new Promise(function(resolve,reject){if(!cloud)return reject(new Error('CloudStorage tidak tersedia'));cloud.getKeys(function(err,keys){if(err)reject(new Error('Telegram CloudStorage error'));else resolve(keys||[]);});});}
+function tgGetItems(keys){return new Promise(function(resolve,reject){if(!keys.length)return resolve({});cloud.getItems(keys,function(err,items){if(err)reject(new Error('Telegram CloudStorage error'));else resolve(items||{});});});}
+function tgPut(key,value){return new Promise(function(resolve,reject){if(!cloud)return reject(new Error('CloudStorage tidak tersedia'));cloud.setItem(key,value,function(err,ok){if(err||!ok)reject(new Error('Telegram CloudStorage error'));else resolve();});});}
+function tgRemove(key){return new Promise(function(resolve,reject){if(!cloud)return reject(new Error('CloudStorage tidak tersedia'));cloud.removeItem(key,function(err,ok){if(err||!ok)reject(new Error('Telegram CloudStorage error'));else resolve();});});}
+
 var saved=readStore('scanstoon_saved',[]);
 var history=readStore('scanstoon_history',[]);
 var S={comics:[],home:null,details:{},saved:Array.isArray(saved)?saved:[],history:Array.isArray(history)?history:[],auth:!!initData,loading:true,error:'',filter:'all',sort:'popular',query:'',genre:''};
+S.telegramPages={};S.telegramLoading={};
 var icons={
 home:'<path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/>',
 explore:'<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/>',
@@ -86,12 +94,53 @@ function profile(){var who=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;var nam
 function detail(slug){var c=S.details[slug]||S.comics.find(function(c){return c.slug===slug;});if(!c){loadDetail(slug);return '<p class="muted">Memuat detail…</p>';}if(!c.chapters){loadDetail(slug);}
 return '<button class="detail-back" data-go="explore">'+icon('back')+' Kembali ke katalog</button><div class="detail-layout"><div class="detail-art">'+art(c,'large')+'</div><div class="detail-content"><div class="eyebrow">'+safe(c.type).toUpperCase()+' · SCANSTOON ORIGINAL</div><h1>'+safe(c.title)+'</h1><p class="muted">'+safe(c.subtitle)+'</p><div class="stats"><span><b>★ '+(Number(c.score)/20).toFixed(1)+'</b> rating demo</span><span>● '+safe(c.status)+'</span></div><div class="tag-row">'+(c.genres||[]).map(function(g){return '<span class="tag">'+safe(g)+'</span>';}).join('')+'</div><p class="detail-description">'+safe(c.synopsis)+'</p><div class="detail-actions"><button class="btn btn-primary" data-go="read/'+safe(c.slug)+'/1">'+icon('play')+' Baca preview</button><button class="btn btn-outline" data-save="'+safe(c.slug)+'">'+icon('bookmark')+' '+(isSaved(c.slug)?'Tersimpan':'Simpan')+'</button></div></div></div><div class="notice">Preview reader berisi panel ilustrasi dan dialog original untuk menguji pengalaman membaca vertikal. Belum tersedia chapter lengkap.</div><section class="section"><div class="section-header"><div><h2 class="section-title">Daftar chapter</h2><p class="section-sub">Pratinjau cerita yang tersedia</p></div></div><div class="chapter-list">'+((c.chapters||[{number:1,title:'Prolog'}]).map(function(ch){return '<button class="chapter-item" data-go="read/'+safe(c.slug)+'/'+ch.number+'"><span><strong>Chapter '+ch.number+' — '+safe(ch.title)+'</strong><small>Preview original • baca vertikal</small></span>'+icon('arrow')+'</button>';}).join(''))+'</div></section>';}
 function reader(slug,num){var c=S.details[slug]||S.comics.find(function(c){return c.slug===slug;});if(!c){loadDetail(slug);return '<p class="muted">Memuat pembaca…</p>';}var chapter=Math.max(1,Math.min(100,Number(num)||1));var lines=['Semua kisah bermula dari sebuah langkah kecil.','Ada dunia yang menunggu di balik cahaya.','Setiap pilihan meninggalkan jejaknya sendiri.','Dan petualangan sebenarnya baru saja dimulai.'];return '<div class="reader-width"><div class="reader-heading"><button class="detail-back" style="padding:0" data-go="detail/'+safe(slug)+'">'+icon('back')+' Detail komik</button><span class="muted tiny">MODE PREVIEW</span></div><div class="reader-headline"><div class="eyebrow">SCANSTOON READER</div><h1>'+safe(c.title)+'</h1><p class="muted">Chapter '+chapter+' • Preview original</p></div><div class="notice">Ini adalah preview pengalaman reader, bukan halaman chapter lengkap atau konten pihak ketiga.</div><div class="reader-pages">'+lines.map(function(line,i){return '<section class="reader-panel"><div class="reader-number">PANEL 0'+(i+1)+'</div><div class="reader-dialog">'+safe(line)+'</div></section>';}).join('')+'</div><div class="reader-end"><div class="eyebrow">THE STORY CONTINUES</div><h2>Akhir preview.</h2><p>Simpan progres dan temukan cerita menarik berikutnya.</p><button class="btn btn-primary" data-complete="'+safe(slug)+'" data-chapter="'+chapter+'">Tandai sudah dibaca ✓</button> <button class="btn btn-outline" data-go="detail/'+safe(slug)+'">Lihat chapter</button></div></div>';}
+
+var previewReader=reader;
+reader=function(slug,num){
+  var chapter=Math.max(1,Math.min(100000,Number(num)||1)),key=slug+':'+chapter,pages=S.telegramPages[key];
+  if(!pages||!pages.length)return previewReader(slug,num);
+  var comic=S.details[slug]||S.comics.find(function(c){return c.slug===slug;})||{title:slug};
+  return '<div class="reader-width"><div class="reader-heading"><button class="detail-back" data-go="detail/'+safe(slug)+'">'+icon('back')+' Detail komik</button><span class="muted tiny">TELEGRAM STORAGE</span></div><div class="reader-headline"><div class="eyebrow">SCANSTOON READER</div><h1>'+safe(comic.title)+'</h1><p class="muted">Chapter '+chapter+' · '+pages.length+' halaman</p></div><div class="reader-pages">'+pages.map(function(p){return '<img src="'+safe(p.url)+'" alt="Halaman '+Number(p.page)+'" loading="lazy" referrerpolicy="no-referrer" style="display:block;width:100%;height:auto" />';}).join('')+'</div><div class="reader-end"><h2>Akhir chapter.</h2><button class="btn btn-primary" data-complete="'+safe(slug)+'" data-chapter="'+chapter+'">Tandai sudah dibaca ✓</button></div></div>';
+};
+
 function loadDetail(slug){if(Object.prototype.hasOwnProperty.call(S.details,slug))return;S.details[slug]=S.comics.find(function(c){return c.slug===slug;})||{slug:slug,title:'Memuat…',genres:[],chapters:[]};call('/api/comics/'+encodeURIComponent(slug)).then(function(data){S.details[slug]=data;if(path()[1]===slug)render();}).catch(function(){toast('Detail belum dapat dimuat.');});}
-function render(){shell();var p=path();var el=document.getElementById('content');if(S.loading){el.innerHTML='<div class="eyebrow">SCANSTOON</div><h1 class="page-title">Menyiapkan dunia ceritamu…</h1><p class="muted">Memuat katalog</p>';return;}var out=p[0]==='explore'?explore():p[0]==='library'?library():p[0]==='profile'?profile():p[0]==='detail'?detail(p[1]||''):p[0]==='read'?reader(p[1]||'',p[2]):home();el.innerHTML=out;if(S.error&&S.comics.length===0)el.innerHTML='<div class="notice">'+safe(S.error)+'</div>'+out;}
-async function bookmarks(){if(!S.auth)return;try{var rows=await call('/api/bookmarks');S.saved=rows.map(function(c){return c.slug;});render();}catch(e){toast('Sinkronisasi bookmark gagal.');}}
-async function loadHistory(){if(!S.auth)return;try{var rows=await call('/api/history');S.history=rows.map(function(c){return {slug:c.slug,chapter_number:c.chapter_number,percent:c.percent};});render();}catch(e){}}
-async function toggleSave(slug){var yes=isSaved(slug);S.saved=yes?S.saved.filter(function(x){return x!==slug;}):[slug].concat(S.saved);if(!S.auth)store('scanstoon_saved',S.saved);render();toast(yes?'Dihapus dari koleksi':'Ditambahkan ke koleksi');if(S.auth){try{await call('/api/bookmarks/'+encodeURIComponent(slug),{method:yes?'DELETE':'PUT'});}catch(e){toast('Gagal menyinkronkan perubahan.');S.saved=yes?[slug].concat(S.saved):S.saved.filter(function(x){return x!==slug;});render();}}}
-async function complete(slug,chapter){var item={slug:slug,chapter_number:chapter,percent:100};S.history=[item].concat(S.history.filter(function(x){return x.slug!==slug;}));if(!S.auth)store('scanstoon_history',S.history);toast('Progress baca disimpan');if(S.auth){try{await call('/api/history/'+encodeURIComponent(slug),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)});}catch(e){toast('Gagal sinkronisasi progres.');}}go('library');}
+function render(){shell();var p=path();var el=document.getElementById('content');if(S.loading){el.innerHTML='<div class="eyebrow">SCANSTOON</div><h1 class="page-title">Menyiapkan dunia ceritamu…</h1><p class="muted">Memuat katalog</p>';return;}var out=p[0]==='explore'?explore():p[0]==='library'?library():p[0]==='profile'?profile():p[0]==='detail'?detail(p[1]||''):p[0]==='read'?reader(p[1]||'',p[2]):home();el.innerHTML=out;
+if(p[0]==='read'&&S.auth&&p[1]){
+ var chapter=Number(p[2])||1,key=p[1]+':'+chapter;
+ if(!S.telegramLoading[key]&&!S.telegramPages[key]){
+   S.telegramLoading[key]=true;
+   call('/api/storage/comics/'+encodeURIComponent(p[1])+'/chapters/'+chapter+'/pages').then(function(pages){S.telegramPages[key]=pages;if(path()[0]==='read'&&path()[1]===p[1])render();}).catch(function(e){toast('Halaman Telegram belum tersedia; menampilkan preview.');});
+ }
+}
+if(S.error&&S.comics.length===0)el.innerHTML='<div class="notice">'+safe(S.error)+'</div>'+out;}
+async function bookmarks(){
+  if(!S.auth||!cloud)return;
+  try{var keys=await tgKeys();S.saved=keys.filter(function(k){return k.indexOf('scs_b_')===0;}).map(function(k){return k.slice(6);});render();}
+  catch(e){toast('Gagal memuat bookmark dari Telegram.');}
+}
+async function loadHistory(){
+  if(!S.auth||!cloud)return;
+  try{var keys=(await tgKeys()).filter(function(k){return k.indexOf('scs_h_')===0;}),items={};
+    for(var i=0;i<keys.length;i+=100)Object.assign(items,await tgGetItems(keys.slice(i,i+100)));
+    S.history=keys.map(function(key){var n=Number(items[key]);return {slug:key.slice(6),chapter_number:n,percent:100};}).filter(function(x){return Number.isSafeInteger(x.chapter_number)&&x.chapter_number>0;});render();
+  }catch(e){toast('Gagal memuat progres dari Telegram.');}
+}
+async function toggleSave(slug){
+  var yes=isSaved(slug);
+  if(S.auth&&!cloud){toast('Telegram CloudStorage tidak tersedia.');return;}
+  S.saved=yes?S.saved.filter(function(x){return x!==slug;}):[slug].concat(S.saved);render();
+  if(!S.auth){store('scanstoon_saved',S.saved);toast(yes?'Dihapus dari koleksi':'Ditambahkan ke koleksi');return;}
+  try{if(yes)await tgRemove('scs_b_'+slug);else await tgPut('scs_b_'+slug,'1');toast(yes?'Dihapus dari Telegram':'Tersimpan di Telegram');}
+  catch(e){toast('Gagal menyinkronkan bookmark.');S.saved=yes?[slug].concat(S.saved):S.saved.filter(function(x){return x!==slug;});render();}
+}
+async function complete(slug,chapter){
+  if(S.auth&&!cloud){toast('Telegram CloudStorage tidak tersedia.');return;}
+  var item={slug:slug,chapter_number:chapter,percent:100};
+  if(S.auth){try{await tgPut('scs_h_'+slug,String(chapter));}catch(e){toast('Gagal menyimpan progres di Telegram.');return;}}
+  S.history=[item].concat(S.history.filter(function(x){return x.slug!==slug;}));
+  if(!S.auth)store('scanstoon_history',S.history);
+  toast('Progress baca disimpan'+(S.auth?' di Telegram':''));go('library');
+}
 document.addEventListener('click',function(e){var target=e.target.closest('button');if(!target)return;if(target.dataset.go){go(target.dataset.go);return;}if(target.dataset.filter){S.filter=target.dataset.filter;render();return;}if(target.dataset.save){toggleSave(target.dataset.save);return;}if(target.dataset.complete){complete(target.dataset.complete,Number(target.dataset.chapter));return;}});
 document.addEventListener('change',function(e){if(e.target.id==='sort-select'){S.sort=e.target.value;render();}});
 document.addEventListener('input',function(e){if(e.target.id!=='search-input')return;S.query=e.target.value;clearTimeout(S.searchTimer);S.searchTimer=setTimeout(function(){var pos=e.target.selectionStart;render();var field=document.getElementById('search-input');if(field){field.focus();try{field.setSelectionRange(pos,pos);}catch(err){}}},240);});

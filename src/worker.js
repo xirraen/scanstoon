@@ -39,6 +39,7 @@ async function api(request,env,url) {
   if (url.pathname==='/api/health') return good({status:'ok',version:'0.1.0',service:'scanstoon'});
   if (!env.DB) return fail(503,'DATABASE_UNAVAILABLE','Database belum dikonfigurasi.');
   const method=request.method;
+  if (url.pathname.startsWith('/api/storage/')) return await telegramStorageRoute(request,env,url);
   if (method==='GET' && url.pathname==='/api/home') {
     const [popular,latest]=await Promise.all([
       env.DB.prepare('SELECT * FROM comics ORDER BY score DESC LIMIT 8').all(),
@@ -120,6 +121,7 @@ async function telegramWebhook(request,env) {
   if(!secureEqual(request.headers.get('X-Telegram-Bot-Api-Secret-Token')||'',env.TELEGRAM_WEBHOOK_SECRET)) return fail(403,'FORBIDDEN','Webhook secret tidak valid.');
   let update;
   try{update=await request.json();}catch{return fail(400,'BAD_BODY','JSON tidak valid.');}
+  if(update?.channel_post) return await telegramStorageUpdate(update.channel_post,env);
   const chat=update?.message?.chat?.id;
   const command=String(update?.message?.text||'').trim().split(/\s+/)[0].split('@')[0];
   if(chat && ['/start','/app','/help'].includes(command)) {
