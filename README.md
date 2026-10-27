@@ -1,1 +1,38 @@
-# scanstoon
+# Scanstoon
+
+Telegram Mini App untuk katalog dan tracker komik orisinal. **MVP live Cloudflare C5**.
+
+## Fitur MVP
+- Katalog responsif, filter tipe, pencarian dan sorting.
+- Detail, genre dan daftar chapter untuk karya contoh orisinal.
+- Reader preview vertikal berbasis visual orisinal (bukan materi komik berhak cipta).
+- Bookmark dan histori lokal untuk pengunjung browser.
+- Bookmark dan histori tersinkron D1 untuk pengguna Telegram (memerlukan bot token).
+- Validasi HMAC-SHA256 Telegram initData pada server.
+- Webhook Telegram dengan secret header, perintah /start, /app, /help.
+
+## Stack
+Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
+
+## Jalankan / deploy
+Node 20+ dan Wrangler 4+.
+
+\`\`\`bash
+npm install
+npm run check
+npx wrangler d1 execute scanstoon-db --local --file=./migrations/0001_init.sql
+npx wrangler d1 execute scanstoon-db --local --file=./migrations/0002_seed.sql
+npm run dev
+npm run deploy
+\`\`\`
+
+Gunakan migrasi \`--remote\` untuk database production dan pastikan akun Cloudflare **C5** dipilih. Set secret secara manual di akun C5:
+\`\`\`bash
+npx wrangler secret put TELEGRAM_BOT_TOKEN
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
+\`\`\`
+Set \`APP_URL\` ke URL produksi melalui konfigurasi Wrangler bila ingin tombol Mini App di webhook. Konfigurasikan Telegram BotFather dan Telegram setWebhook dengan secret yang sama. **Jangan pernah commit token bot**.
+
+**Keamanan:** Endpoint baca katalog bersifat publik, penyimpanan user memerlukan Telegram initData valid dan tidak menerima user ID dari klien. Tidak ada token demo yang membuka API privat.
+
+**Catatan konten:** Semua data di migration seed adalah judul fiksi orisinal khusus demonstrasi. Visual reader juga contoh orisinal, bukan chapter komik lain. Hanya gunakan materi yang dimiliki atau dilisensikan. R2 belum aktif di akun C5, sehingga storage media belum disiapkan.
