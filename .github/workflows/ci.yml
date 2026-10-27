@@ -17,3 +17,23 @@ jobs:
         run: npm run check
       - name: API security smoke tests
         run: node --test tests/*.test.mjs
+
+      - name: Live Cloudflare C5 endpoint smoke test
+        run: |
+          python - <<'PY'
+          import json
+          from urllib.request import urlopen
+
+          base = 'https://scanstoon.ikomik-core.workers.dev'
+          for path in ['/api/health', '/api/telegram/status', '/api/comics?limit=1']:
+              with urlopen(base + path, timeout=20) as response:
+                  assert response.status == 200, (path, response.status)
+                  body = json.load(response)
+              assert body.get('success') is True, (path, body)
+              if path == '/api/health':
+                  assert body['data']['status'] == 'ok'
+              if path == '/api/telegram/status':
+                  assert body['data']['webhook'] == 'ok'
+                  assert body['data']['channel'] == 'admin'
+          print('Cloudflare C5 smoke tests passed')
+          PY
