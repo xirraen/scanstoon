@@ -1,0 +1,16 @@
+{
+  "name": "scanstoon",
+  "main": "dist/worker.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "scanstoon-db",
+      "database_id": "2ffe4941-40b2-4ce7-9901-e43b87396507"
+    }
+  ],
+  "vars": {
+    "APP_NAME": "Scanstoon"
+  }
+}
