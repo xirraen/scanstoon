@@ -23,12 +23,19 @@ jobs:
           python - <<'PY'
           import json
           from urllib.request import urlopen
+          from urllib.error import HTTPError
 
           base = 'https://scanstoon.ikomik-core.workers.dev'
           for path in ['/api/health', '/api/telegram/status', '/api/comics?limit=1']:
-              with urlopen(base + path, timeout=20) as response:
-                  assert response.status == 200, (path, response.status)
-                  body = json.load(response)
+              try:
+                  with urlopen(base + path, timeout=20) as response:
+                      assert response.status == 200, (path, response.status)
+                      body = json.load(response)
+              except HTTPError as err:
+                  print('LIVE HTTP ERROR:', path, err.code, 'Server:', err.headers.get('Server'),
+                        'CF-Ray:', err.headers.get('CF-Ray'))
+                  print('BODY:', err.read(1500).decode('utf-8', errors='replace'))
+                  raise
               assert body.get('success') is True, (path, body)
               if path == '/api/health':
                   assert body['data']['status'] == 'ok'
