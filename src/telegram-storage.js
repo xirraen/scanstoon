@@ -117,3 +117,43 @@ async function telegramBootstrap(env) {
     await record('error','',username,channelStatus,'TELEGRAM_API_UNAVAILABLE');
   }
 }
+
+
+// Idempotent default Mini App menu setup. Runs only from a temporary Cron Trigger.
+// No bot tokens are persisted in D1 or returned to the client.
+async function telegramMenuBootstrap(env){
+  const db=env.DB;
+  const record=async(status,url,errorCode)=>{
+    await db.prepare("INSERT INTO telegram_menu_setup(id,status,menu_url,error_code,updated_at) VALUES(1,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(id) DO UPDATE SET status=excluded.status,menu_url=excluded.menu_url,error_code=excluded.error_code,updated_at=CURRENT_TIMESTAMP").bind(status,url||'',errorCode||'').run();
+  };
+  const previous=await db.prepare('SELECT status FROM telegram_menu_setup WHERE id=1').first();
+  if(previous?.status==='ok')return;
+  const webhook=await db.prepare('SELECT status FROM telegram_setup_status WHERE id=1').first();
+  if(webhook?.status!=='ok'){await record('blocked','','WEBHOOK_NOT_READY');return;}
+  const token=env.TELEGRAM_BOT_TOKEN||env.TELEGRAM_TOKEN_BOT;
+  if(!token){await record('blocked','','BOT_TOKEN_MISSING');return;}
+  const target='https://scanstoon.ikomik-core.workers.dev';
+  const api='https://api.telegram.org/bot'+token+'/';
+  try{
+    const call=async(method,body)=>{
+      const res=await fetch(api+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});
+      if(!res.ok)return null;
+      const data=await res.json();
+      return data?.ok?data.result:null;
+    };
+    const existing=await call('getChatMenuButton');
+    if(!existing){await record('error','','MENU_READ_FAILED');return;}
+    if(existing.type==='web_app'){
+      if(existing.web_app?.url===target){await record('ok',target,'');return;}
+      await record('blocked','','EXISTING_MENU_OTHER_URL');return;
+    }
+    const changed=await call('setChatMenuButton',{menu_button:{type:'web_app',text:'Buka Scanstoon',web_app:{url:target}}});
+    if(changed!==true){await record('error','','MENU_WRITE_FAILED');return;}
+    const confirmed=await call('getChatMenuButton');
+    if(confirmed?.type!=='web_app'||confirmed?.web_app?.url!==target){await record('error','','MENU_VERIFY_FAILED');return;}
+    await record('ok',target,'');
+  }catch(error){
+    // Error details may expose the token embedded in the Telegram API URL.
+    await record('error','','BOT_API_UNAVAILABLE');
+  }
+}
