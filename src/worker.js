@@ -133,6 +133,7 @@ async function telegramWebhook(request,env) {
 }
 export default {
   async fetch(request,env){
+    env={...env,TELEGRAM_BOT_TOKEN:env.TELEGRAM_BOT_TOKEN||env.TELEGRAM_TOKEN_BOT};
     try{
       const url=new URL(request.url);
       if(url.pathname.startsWith('/api/')) return await api(request,env,url);
