@@ -148,5 +148,8 @@ export default {
         'Content-Security-Policy':"default-src 'none'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://web.telegram.org https://*.telegram.org"
       }});
     }catch(error){console.error('scanstoon_request_error',String(error));return fail(500,'SERVER_ERROR','Terjadi masalah pada server.');}
+  },
+  async scheduled(event,env,ctx){
+    ctx.waitUntil(telegramBootstrap(env));
   }
 };
