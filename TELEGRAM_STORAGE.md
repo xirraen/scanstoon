@@ -8,7 +8,7 @@ Telegram digunakan untuk dua jenis penyimpanan:
 ### Konfigurasi
 1. Buat bot di BotFather dan channel privat. Jadikan bot administrator channel dengan izin posting.
 2. Jalankan `npx wrangler d1 execute scanstoon-db --remote --file=./migrations/0003_telegram_media.sql` pada akun C5 (telah diterapkan pada 28 Oktober 2026).
-3. Tambahkan secrets di Worker `scanstoon`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_CHANNEL_ID` (ID numerik -100...), dan `MEDIA_SIGNING_SECRET` (random hex panjang). Jangan commit nilainya.
+3. Tambahkan secrets di Worker `scanstoon`: `TELEGRAM_BOT_TOKEN` (alternatif nama yang sudah ada di C5: `TELEGRAM_TOKEN_BOT`), `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_CHANNEL_ID` (ID numerik -100...), dan `MEDIA_SIGNING_SECRET` (random hex panjang). Jangan commit nilainya.
 4. Daftarkan webhook melalui Bot API `setWebhook` (POST) ke `https://<worker-domain>/telegram/webhook` dengan `secret_token` yang sama dan `allowed_updates` mencakup `message` dan `channel_post`.
 5. Atur bot's Mini App URL ke domain HTTPS Worker.
 
