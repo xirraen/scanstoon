@@ -11,6 +11,18 @@ Telegram Mini App untuk katalog dan tracker komik orisinal. **MVP live Cloudflar
 - Validasi HMAC-SHA256 Telegram initData pada server.
 - Webhook Telegram dengan secret header, perintah /start, /app, /help.
 
+## Scanstoon Aurora (UI 0.2)
+
+Rancangan aplikasi mobile dibuat secara independen dengan mengambil **pola interaksi umum** dari video referensi, tanpa menyalin merek, materi komik, aset, atau kode pihak ketiga.
+
+- Tab **Beranda**, **Katalog**, **Pustaka**, **Aktivitas**, dan **Akun** yang dioptimalkan untuk Telegram Mini App.
+- Filter katalog berdasarkan format, genre, status serial, pengurutan, serta opsi tampilan grid/daftar.
+- Beranda dengan pintasan **lanjut baca** dari progres tersimpan dan akses aktivitas harian.
+- Check-in membaca harian serta tampilan 7 hari dan streak. Check-in tidak menghasilkan uang, poin, atau hadiah finansial.
+- Check-in disinkronkan lewat **Telegram CloudStorage** jika tersedia, dan tersimpan di localStorage saat dibuka lewat browser.
+- Tema terang/gelap, progres scroll reader, dan ekspor cadangan JSON berisi bookmark serta progres. Ekspor belum mendukung impor otomatis.
+- Ilustrasi seed tetap placeholder orisinal; tidak disertakan media berhak cipta dari aplikasi referensi.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
