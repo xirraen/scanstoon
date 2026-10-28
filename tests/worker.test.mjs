@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {Script} from 'node:vm';
 import worker from '../dist/worker.js';
 
 const make = (path, init) => new Request('https://scanstoon.example' + path, init);
@@ -18,6 +19,18 @@ test('static Mini App is served with restrictive CSP', async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get('content-security-policy'), /default-src 'none'/);
   assert.match(await response.text(), /Scanstoon/i);
+});
+
+test('video-inspired Scanstoon mobile interface is valid and original', async () => {
+  const response = await worker.fetch(make('/'), {});
+  const html = await response.text();
+  const match = html.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(match, 'inline client app exists');
+  assert.doesNotThrow(() => new Script(match[1]), 'client script parses');
+  for (const feature of ['Aktivitas', 'Filter katalog', 'genre-select', 'status-select', 'data-view="list"', 'data-theme-toggle', 'data-export-backup', 'reader-progress']) {
+    assert.ok(html.includes(feature), 'missing UI: ' + feature);
+  }
+  assert.doesNotMatch(html, /ЯМИКО|YAMIKO/i, 'third-party brand should not appear');
 });
 
 test('Telegram webhook rejects unauthenticated requests', async () => {
