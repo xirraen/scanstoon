@@ -91,19 +91,95 @@ html[data-theme="light"] .brand-copy b{color:#142338}
 html[data-theme="light"] .profile-panel{background:#e5effa;border-color:#ccd9e9;color:#13243a}
 html[data-theme="light"] .toast{background:#e8fbfc;color:#18505a}
 @media(max-width:650px){.quick-row{grid-template-columns:1fr 1fr;gap:8px}.quick-card{padding:12px;border-radius:14px}.quick-card b{font-size:11px}.quick-card .quick-icon{font-size:17px}.filters-panel{padding:11px}.filter-grid{grid-template-columns:1fr 1fr}.filter-field:last-child{grid-column:1/-1}.card-grid.list-view{grid-template-columns:1fr}.week-day{min-height:58px}.activity-hero{padding:18px}.bottom-link{padding:6px 3px;min-width:0;flex:1;font-size:9px}.bottom-link svg{width:19px;height:19px}}
+
+/* Scanstoon Spectrum UI v0.3 — original mobile-first design layer. */
+:root{--bg:#080c17;--panel:#111a2b;--panel2:#192339;--stroke:#26354c;--muted:#92a3be;--text:#f5f8ff;--cyan:#6df0ed;--pink:#fc73bc;--purple:#a88cff;--radius:22px}
+html{-webkit-tap-highlight-color:transparent;scroll-padding-top:92px}
+body{background:radial-gradient(ellipse 44% 20% at 87% -3%,#142955 0,transparent 100%),radial-gradient(ellipse 40% 20% at -16% 26%,#1b17477a 0,transparent 100%),var(--bg)}
+button{touch-action:manipulation}
+.topbar{height:79px;background:#0a1020df;border-color:#26334a;box-shadow:0 12px 38px #04071144;z-index:40}
+.brand{gap:12px}.brand-mark{width:43px;height:43px;border-radius:15px;background:linear-gradient(140deg,#12243a 4%,#0e344c 50%,#42215e 100%);box-shadow:0 0 0 4px #66f0ee0a,0 4px 29px #65ebfc20;border-color:#528193}.brand-mark span{font-size:28px}
+.brand-copy b{font-size:19px;letter-spacing:.075em}.brand-copy small{font-size:9px;letter-spacing:.24em;color:#7e90b5}
+.top-label{border:1px solid #29545a;background:linear-gradient(100deg,#153b43,#142b3d);color:#b6fcf1;letter-spacing:.13em}
+.icon-btn,.avatar{width:41px;height:41px;border-radius:13px;background:#151f34;border-color:#314158}
+.icon-btn:hover,.avatar:hover{border-color:#6debe5;color:#80f3ef}
+.avatar{border-radius:50%;background:linear-gradient(145deg,#76eaf6,#b18bfc);color:#0c1530;font-weight:950}
+.frame{grid-template-columns:230px minmax(0,1fr);min-height:calc(100vh - 79px)}
+.sidebar{top:79px;height:calc(100vh - 79px);border-color:#28334a;padding:31px 17px}
+.sidebar-title{color:#7e92ae}.side-link{margin-bottom:8px;min-height:48px;border:1px solid transparent}.side-link.active{color:#b3fffa;border-color:#2c5866;background:linear-gradient(105deg,#12333e,#192b3a)}.side-link svg{width:20px;height:20px}
+.content{max-width:1300px;padding:37px clamp(22px,3.2vw,48px) 135px}
+.home-welcome{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 0 22px}.welcome-kicker{display:flex;align-items:center;gap:8px;color:#8b9ab7;font-size:11px;font-weight:850;letter-spacing:.13em}.welcome-kicker:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px #60edda}.welcome-heading{margin:5px 0 0;font-size:clamp(18px,2.1vw,25px);letter-spacing:-.05em;font-weight:850}.welcome-heading span{color:var(--cyan)}.welcome-search{display:flex;align-items:center;gap:11px;border:1px solid #2e4058;border-radius:14px;background:#121c2d;color:#9aabc7;padding:12px 16px;font-size:12px;font-weight:650;min-width:190px}.welcome-search svg{width:17px;height:17px}.welcome-search:hover{border-color:#5ad4d7;color:#e8ffff}
+.hero{isolation:isolate;min-height:330px;overflow:hidden;border-radius:28px;margin-bottom:20px;background:radial-gradient(circle at 82% 32%,#7a3f9e77 0,transparent 34%),radial-gradient(ellipse 60% 100% at 26% 105%,#106b87aa 0,transparent 76%),linear-gradient(112deg,#0e2c40,#16223b 52%,#281638);border:1px solid #3a4b6f;box-shadow:0 24px 65px #0006}
+.hero::before{background:repeating-linear-gradient(130deg,transparent 0,transparent 77px,#ffffff13 78px,transparent 79px);opacity:.7}
+.hero::after{border-color:#c1f2fa26;box-shadow:0 0 0 39px #ffffff07,0 0 0 100px #ffffff05;right:1%}
+.hero-copy{max-width:490px}.hero .eyebrow{color:#9cfbf3}.hero h1{font-size:clamp(38px,4.6vw,62px);letter-spacing:-.068em}.hero p{font-size:13px;max-width:365px;color:#c5d8e8;line-height:1.8}.hero-actions{gap:10px}.hero .btn{min-height:45px}
+.hero-poster{width:223px;height:302px;right:10%;top:28px;transform:rotate(10deg);border:4px solid #ffffff28;border-radius:18px;box-shadow:-28px 18px 70px #0009;filter:saturate(1.13)}.hero-float{right:3%;bottom:24px;border-radius:12px;padding:10px 13px;background:#121c31df;color:#fff;border-color:#e7f8ff42}
+.eyebrow{font-size:10px;color:#6cf1e7}.page-title{font-weight:900;letter-spacing:-.058em}
+.section{margin-top:33px}.section-title{font-size:22px;letter-spacing:-.048em}.section-header{margin-bottom:16px}.section-sub{color:#8f9db8}.link-btn{color:#8ff6ef;font-weight:800}
+.quick-row{gap:13px;margin-bottom:32px}.quick-card{min-height:108px;padding:21px 23px;border-radius:19px;border-color:#315273;background:linear-gradient(110deg,#18364b,#15213b 80%);box-shadow:inset 0 1px #ffffff12,0 16px 30px #030a1a35}.quick-card:nth-child(2){background:linear-gradient(110deg,#342449,#1a203d);border-color:#533e77}.quick-card small{color:#92c2ca;font-size:10px;letter-spacing:.12em}.quick-card:nth-child(2) small{color:#c7a4f0}.quick-card b{margin-top:7px;font-size:17px}.quick-card .quick-icon{width:39px;height:39px;border-radius:13px;background:#ffffff13;display:grid;place-items:center;color:#92fbec;font-size:23px}
+.chips{gap:9px;margin:0 -3px;padding:5px 3px 15px}.chip{background:#151e30;border-color:#2e3b56;color:#aab9d1;padding:10px 17px;transition:background .18s,border-color .18s,color .18s}.chip.active{border-color:#55c6d1;color:#bbfff6;background:linear-gradient(110deg,#164350,#173745);box-shadow:0 0 0 1px #62f7ee0c}.chip:active{transform:scale(.97)}
+.card-grid{gap:20px}.comic-card{position:relative}.cover{border-radius:16px;box-shadow:0 12px 26px #02071466,0 1px 0 #ffffff12 inset;transform:translateZ(0);transition:transform .25s ease,box-shadow .25s ease}.cover:before{width:145%;height:90%;left:-25%;top:-32%;box-shadow:0 0 0 38px #ffffff0c,0 0 0 85px #ffffff08}.cover:after{background:linear-gradient(0deg,#04061ee9 0,#080c2b99 36%,transparent 100%);inset:auto -10px 0 -10px;height:68%;transform:none}.cover-kicker{font-size:8px;letter-spacing:.1em;color:#ffffffd9}.cover-symbol{top:37%;font-size:clamp(40px,6vw,86px);letter-spacing:-.16em;text-shadow:0 13px 38px #060621cc;transform:translate(-50%,-50%) rotate(-10deg)}.cover-caption{left:10%;right:10%;bottom:9%;font-size:clamp(13px,1.5vw,24px);text-shadow:0 3px 10px #000d;line-height:1.02}
+.cover-badge{font-size:8px;top:10px;right:10px;border:1px solid #ffffff27;padding:5px 7px}.comic-card .bookmark-mini{position:absolute;right:10px;bottom:55px;z-index:4;background:#10182fcb;backdrop-filter:blur(12px);border:1px solid #ffffff3a;color:#c8d8e7;width:33px;height:33px;border-radius:10px}.comic-card .bookmark-mini.saved{background:#174b55;color:#9efff5;border-color:#62d4d4}.comic-card .bookmark-mini svg{width:16px;height:16px}.card-row{padding-top:11px}.card-title{font-size:14px}.card-meta{margin-top:4px;font-size:11px}.card-meta span{color:#f8d48e}
+.update-list{gap:12px}.update-item{border-radius:17px;background:#121b2d;border-color:#2d3b52;padding:11px;transition:background .2s,transform .2s}.update-item:hover{transform:translateY(-2px)}.update-item .cover{width:64px;min-width:64px}.update-copy b{font-size:13px}.update-copy small{font-size:11px}.update-arrow{font-size:24px;color:#83f5eb}
+.search-box{background:#141f31;border-color:#34435e;border-radius:14px;min-height:49px}.filters-panel,.panel-box,.metric,.chapter-item{background:#11192a;border-color:#2b3951}.filters-panel{border-radius:17px}.view-switch{background:#0d1626;border-color:#2e3c51}
+.detail-layout{gap:35px}.detail-art .cover{box-shadow:0 25px 60px #0008}.detail-description{line-height:1.85}
+.reader-width{max-width:730px}.reader-panel{border-radius:3px}.reader-headline h1{letter-spacing:-.05em}
+.bottomnav{display:none}
+body.reading .bottomnav{display:none}
+#reader-progress{height:4px}
+.toast{border-radius:15px;box-shadow:0 14px 30px #000b}
+@media(min-width:901px){.sidebar{background:linear-gradient(180deg,#0d1524bb,transparent 75%)}}
+@media(max-width:900px){
+ .frame{display:block}.sidebar{display:none}.content{padding:25px 21px 145px}.card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .topbar{height:70px;padding:0 21px}.bottomnav{display:flex;left:50%;right:auto;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));width:calc(100% - 24px);max-width:680px;justify-content:space-around;gap:2px;padding:8px 8px;background:#101c2def;border:1px solid #34445a;box-shadow:0 12px 55px #020512b3;border-radius:23px;backdrop-filter:blur(20px)}
+ .bottom-link{position:relative;flex:1;min-width:0;border-radius:16px;padding:8px 3px 6px;gap:4px;font-size:10px;font-weight:700;transition:.2s}
+ .bottom-link svg{width:22px;height:22px;stroke-width:1.85}.bottom-link.active{background:linear-gradient(160deg,#184351,#173044);color:#9bfff3;transform:none}.bottom-link.active:after{content:"";position:absolute;top:-9px;width:19px;height:3px;background:#6af4eb;border-radius:6px;box-shadow:0 0 16px #6af4ebe0}
+ .bottom-link.active svg{filter:drop-shadow(0 0 4px #74fff651)}.toast{bottom:108px}
+ .hero-poster{right:6%}
+}
+@media(max-width:650px){
+ html{scroll-padding-top:76px}
+ .topbar{height:67px;padding:0 17px;border-bottom-color:#24334b}.brand-mark{width:40px;height:40px;border-radius:14px}.brand-copy b{font-size:17px}.brand-copy small{font-size:8px}.top-label{display:none}.header-right{gap:9px}.icon-btn,.avatar{width:39px;height:39px}
+ .content{padding:20px 16px 135px}
+ .home-welcome{margin-bottom:15px;gap:8px}.welcome-heading{font-size:19px}.welcome-kicker{font-size:9px}.welcome-search{min-width:0;padding:10px;border-radius:12px;font-size:0;aspect-ratio:1}.welcome-search svg{width:20px;height:20px}
+ .hero{min-height:315px;border-radius:22px;padding:25px 21px;margin-bottom:14px}.hero-copy{max-width:81%}.hero h1{font-size:clamp(34px,9vw,44px);line-height:1.06;margin:11px 0 11px}.hero p{font-size:11px;max-width:225px;margin-bottom:19px;line-height:1.7}.hero .eyebrow{font-size:9px}.hero .btn{min-height:42px}.hero-actions{gap:7px}.hero-actions .btn-secondary{display:none}.hero-poster{height:236px;width:171px;right:-84px;top:65px;opacity:.7;transform:rotate(9deg)}.hero-poster:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0d234144,transparent)}.hero::after{right:-30%}.hero-float{display:block;right:16px;bottom:16px;padding:7px 9px;font-size:8px}
+ .quick-row{grid-template-columns:1.2fr 1fr;gap:9px;margin-bottom:27px}.quick-card{padding:13px 12px;min-height:86px;border-radius:15px;align-items:flex-end}.quick-card small{font-size:8px;letter-spacing:.065em}.quick-card b{font-size:12px;line-height:1.35}.quick-card .quick-icon{width:26px;height:26px;font-size:17px;border-radius:9px}
+ .section{margin-top:28px}.section-header{margin-bottom:12px}.section-title{font-size:19px}.section-sub{font-size:11px}.card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}.card-title{font-size:13px}.cover{border-radius:13px}.cover-kicker{font-size:7px;left:9px;top:11px}.cover-badge{font-size:7px;right:7px;top:8px}.cover-caption{font-size:clamp(15px,4vw,23px)}.cover-symbol{font-size:62px}.comic-card .bookmark-mini{bottom:57px;right:8px;width:31px;height:31px}
+ .chips{gap:7px}.chip{font-size:11px;padding:9px 13px}
+ .update-list{grid-template-columns:1fr;gap:9px}.update-item{padding:9px}.update-item .cover{width:55px;min-width:55px}.update-arrow{font-size:20px}
+ .detail-layout{grid-template-columns:115px minmax(0,1fr);gap:16px}.detail-content h1{font-size:24px}.detail-actions{gap:7px}
+ .bottomnav{width:calc(100% - 20px);bottom:max(9px,env(safe-area-inset-bottom));padding:7px 5px;border-radius:19px}.bottom-link{font-size:9px;padding:7px 3px 6px}.bottom-link svg{width:20px;height:20px}
+ .reader-width{margin:0 -16px}.reader-heading,.reader-headline,.reader-end{padding-left:16px;padding-right:16px}
+}
+@media(max-width:370px){.hero-copy{max-width:85%}.hero h1{font-size:31px}.hero-poster{right:-105px}.quick-card .quick-icon{display:none}.bottom-link{font-size:8px}.welcome-heading{font-size:17px}}
+html[data-theme="light"] body{background:linear-gradient(160deg,#e9f3f8,#f5f8fe 46%,#eaf0f9)}
+html[data-theme="light"] .home-welcome{color:#172b43}
+html[data-theme="light"] .welcome-kicker{color:#47677e}
+html[data-theme="light"] .welcome-search{background:#fff;color:#46617b;border-color:#c8d8ea}
+html[data-theme="light"] .topbar{background:#fffffff2}
+html[data-theme="light"] .bottomnav{background:#fffffff3;border-color:#cbdbe9}
+html[data-theme="light"] .bottom-link.active{background:linear-gradient(115deg,#d4f8f7,#dbecfb)}
+html[data-theme="light"] .quick-card{color:#fff}
+html[data-theme="light"] .cover-kicker,html[data-theme="light"] .cover-caption,html[data-theme="light"] .cover-badge{color:#fff}
+html[data-theme="light"] .card-title{color:#17283e}
+html[data-theme="light"] .comic-card .bookmark-mini{background:#16263acc;color:#eaf5ff}
+html[data-theme="light"] .brand-copy small{color:#597287}
+html[data-theme="light"] .avatar{color:#0d1a2f}
+@media(prefers-reduced-motion:reduce){.cover,.chip,.update-item{transition:none!important}}
+
 </style>
 </head>
 <body>
 <header class="topbar">
-<button class="brand" data-go="home" aria-label="Scanstoon beranda"><span class="brand-mark"><span>S</span></span><span class="brand-copy"><b>SCANSTOON</b><small>STORIES BEYOND</small></span></button>
-<div class="header-right"><span class="top-label">MINI APP</span><button class="icon-btn" data-go="explore" aria-label="Cari komik"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg></button><button class="avatar" data-go="profile" aria-label="Profil" id="avatar-letter">S</button></div>
+<button class="brand" data-go="home" aria-label="Scanstoon beranda"><span class="brand-mark"><span>S</span></span><span class="brand-copy"><b>SCANSTOON</b><small>COMIC UNIVERSE</small></span></button>
+<div class="header-right"><span class="top-label">TELEGRAM MINI APP</span><button class="icon-btn" data-go="explore" aria-label="Cari komik"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg></button><button class="avatar" data-go="profile" aria-label="Profil" id="avatar-letter">S</button></div>
 </header>
 <div class="frame"><aside class="sidebar"><div class="sidebar-title">MENU UTAMA</div><div id="sidenav"></div><div class="sidebar-footer"><b>SCANSTOON / BETA</b>Discover • Save • Continue<br>Original stories only</div></aside><main class="content" id="content" aria-live="polite"><div class="muted">Memuat katalog…</div></main></div>
 <nav class="bottomnav" id="bottomnav" aria-label="Navigasi utama"></nav><div id="reader-progress" aria-hidden="true"></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 (function(){
 'use strict';
-var tg=window.Telegram&&window.Telegram.WebApp||null;try{if(tg){tg.ready();tg.expand();}}catch(e){}
+var tg=window.Telegram&&window.Telegram.WebApp||null;try{if(tg){tg.ready();tg.expand();if(typeof tg.setHeaderColor==='function')tg.setHeaderColor('#080c17');if(typeof tg.setBackgroundColor==='function')tg.setBackgroundColor('#080c17');}}catch(e){}
 var initData=tg&&tg.initData||'';
 
 var cloud=tg&&tg.CloudStorage||null;
@@ -141,7 +217,7 @@ function toast(msg){var el=document.getElementById('toast');el.textContent=msg;e
 function call(url,opts){opts=opts||{};opts.headers=Object.assign({},opts.headers||{},initData?{'X-Telegram-Init-Data':initData}:{});
 return fetch(url,opts).then(function(r){return r.json().then(function(j){if(!r.ok||!j.success)throw new Error(j.error&&j.error.message||'Gagal memuat data');return j.data;});});}
 function isSaved(slug){return S.saved.indexOf(slug)!==-1;}
-function art(c,cls){var n=Math.abs(Number(c.art_code)||0)%12;var mark=(c.title||'S').split(/\s+/).slice(0,2).map(function(x){return x[0]||'';}).join('');return '<div class="cover cover-'+n+' '+(cls||'')+'"><span class="cover-kicker">SCANSTOON ORIGINAL</span><div class="cover-shards"></div><span class="cover-symbol">'+safe(mark)+'</span><span class="cover-caption">'+safe(c.title)+'</span></div>';}
+function art(c,cls){var n=Math.abs(Number(c.art_code)||0)%12;var mark=(c.title||'S').split(/\s+/).slice(0,2).map(function(x){return x[0]||'';}).join('');var status=c.status==='completed'?'TAMAT':c.status==='hiatus'?'HIATUS':'ONGOING';return '<div class="cover cover-'+n+' '+(cls||'')+'"><span class="cover-kicker">SCANSTOON / '+safe(c.type||'ORIGINAL').toUpperCase()+'</span><span class="cover-badge">'+status+'</span><div class="cover-shards"></div><span class="cover-symbol">'+safe(mark)+'</span><span class="cover-caption">'+safe(c.title)+'</span></div>';}
 function card(c){return '<article class="comic-card"><button class="poster-link" data-go="detail/'+safe(c.slug)+'" aria-label="Lihat '+safe(c.title)+'">'+art(c)+'<div class="card-row"><div class="card-title">'+safe(c.title)+'</div><div class="card-details"><div class="card-meta">'+safe(c.type).toUpperCase()+' · <span>★ '+(Number(c.score)/20).toFixed(1)+'</span></div></div></div></button><button class="bookmark-mini '+(isSaved(c.slug)?'saved':'')+'" data-save="'+safe(c.slug)+'" title="'+(isSaved(c.slug)?'Hapus dari koleksi':'Simpan ke koleksi')+'" aria-label="'+(isSaved(c.slug)?'Hapus':'Simpan')+' '+safe(c.title)+'">'+icon('bookmark')+'</button></article>';}
 function cards(rows){return rows.length?'<div class="card-grid">'+rows.map(card).join('')+'</div>':empty('Tidak ada judul ditemukan','Coba ubah pencarian atau filter.');}
 function empty(title,copy){return '<div class="empty"><div class="empty-icon">✦</div><h3>'+safe(title)+'</h3><p>'+safe(copy)+'</p><button class="btn btn-primary" data-go="explore">Jelajahi katalog '+icon('arrow')+'</button></div>';}
@@ -156,7 +232,7 @@ return '<div class="quick-row">'+(comic?'<button class="quick-card" data-go="rea
 }
 function home(){var first=S.comics[0];if(!first)return empty('Katalog belum tersedia','Silakan periksa koneksi dan coba lagi.');
 var pop=(S.home&&S.home.popular)||S.comics;
-return '<section class="hero"><div class="hero-copy"><div class="eyebrow">✦ YOUR NEXT UNIVERSE</div><h1>Setiap panel,<br><span class="gradient-text">dunia baru.</span></h1><p>Temukan cerita orisinal, susun daftar bacaan, dan lanjutkan petualanganmu dari mana saja.</p><div class="hero-actions"><button class="btn btn-primary" data-go="explore">Jelajahi cerita '+icon('arrow')+'</button><button class="btn btn-secondary" data-go="detail/'+safe(first.slug)+'">Pilihan editor '+icon('play')+'</button></div></div><div class="hero-poster">'+art(first,'large')+'</div><div class="hero-float">★ EDITOR\'S PICK</div></section>'
+return '<div class="home-welcome"><div><span class="welcome-kicker">SCANSTOON / YOUR DAILY ESCAPE</span><h2 class="welcome-heading">Halo, siap menjelajah <span>cerita?</span></h2></div><button class="welcome-search" data-go="explore" aria-label="Cari cerita">'+icon('explore')+'<span>Cari cerita</span></button></div>'+'<section class="hero"><div class="hero-copy"><div class="eyebrow">✦ YOUR NEXT UNIVERSE</div><h1>Setiap panel,<br><span class="gradient-text">dunia baru.</span></h1><p>Temukan cerita orisinal, susun daftar bacaan, dan lanjutkan petualanganmu dari mana saja.</p><div class="hero-actions"><button class="btn btn-primary" data-go="explore">Jelajahi cerita '+icon('arrow')+'</button><button class="btn btn-secondary" data-go="detail/'+safe(first.slug)+'">Pilihan editor '+icon('play')+'</button></div></div><div class="hero-poster">'+art(first,'large')+'</div><div class="hero-float">★ EDITOR\'S PICK</div></section>'
 +homeContinue()+'<section><div class="section-header"><div><div class="eyebrow">EXPLORE GENRES</div><h2 class="section-title">Apa yang ingin kamu baca?</h2></div></div>'+chips()+'</section>'
 +'<section class="section"><div class="section-header"><div><h2 class="section-title">Populer minggu ini <span class="gradient-text">✦</span></h2><p class="section-sub">Kisah-kisah pilihan untuk kamu jelajahi</p></div><button class="link-btn" data-go="explore">Lihat semua →</button></div>'+cards((S.filter==='all'?pop:pop.filter(function(c){return c.type===S.filter;})).slice(0,10))+'</section>'
 +'<section class="section"><div class="section-header"><div><h2 class="section-title">Baru di katalog</h2><p class="section-sub">Cerita original yang siap kamu mulai</p></div></div><div class="update-list">'+S.comics.slice(0,6).map(function(c){return '<button class="update-item" data-go="detail/'+safe(c.slug)+'">'+art(c)+'<div class="update-copy"><b>'+safe(c.title)+'</b><small>'+safe(c.type).toUpperCase()+' · '+safe(c.status)+'</small></div><span class="update-arrow">›</span></button>';}).join('')+'</div></section>';}
@@ -197,7 +273,7 @@ reader=function(slug,num){
 };
 
 function loadDetail(slug){if(Object.prototype.hasOwnProperty.call(S.details,slug))return;S.details[slug]=S.comics.find(function(c){return c.slug===slug;})||{slug:slug,title:'Memuat…',genres:[],chapters:[]};call('/api/comics/'+encodeURIComponent(slug)).then(function(data){S.details[slug]=data;if(path()[1]===slug)render();}).catch(function(){toast('Detail belum dapat dimuat.');});}
-function render(){shell();var p=path();var el=document.getElementById('content');if(S.loading){el.innerHTML='<div class="eyebrow">SCANSTOON</div><h1 class="page-title">Menyiapkan dunia ceritamu…</h1><p class="muted">Memuat katalog</p>';return;}var out=p[0]==='explore'?explore():p[0]==='library'?library():p[0]==='profile'?profile():p[0]==='activity'?activity():p[0]==='detail'?detail(p[1]||''):p[0]==='read'?reader(p[1]||'',p[2]):home();el.innerHTML=out;document.body.classList.toggle('reading',p[0]==='read');updateReadingProgress();
+function render(){shell();var p=path();if(tg&&tg.BackButton){try{if(p[0]==='detail'||p[0]==='read')tg.BackButton.show();else tg.BackButton.hide();}catch(e){}}var el=document.getElementById('content');if(S.loading){el.innerHTML='<div class="eyebrow">SCANSTOON</div><h1 class="page-title">Menyiapkan dunia ceritamu…</h1><p class="muted">Memuat katalog</p>';return;}var out=p[0]==='explore'?explore():p[0]==='library'?library():p[0]==='profile'?profile():p[0]==='activity'?activity():p[0]==='detail'?detail(p[1]||''):p[0]==='read'?reader(p[1]||'',p[2]):home();el.innerHTML=out;document.body.classList.toggle('reading',p[0]==='read');updateReadingProgress();
 if(p[0]==='read'&&S.auth&&p[1]){
  var chapter=Number(p[2])||1,key=p[1]+':'+chapter;
  if(!S.telegramLoading[key]&&!S.telegramPages[key]){
@@ -263,6 +339,8 @@ window.addEventListener('resize',updateReadingProgress);
 document.addEventListener('click',function(e){var target=e.target.closest('button');if(!target)return;if(target.dataset.go){go(target.dataset.go);return;}if(target.dataset.checkin){dailyCheckin();return;}if(target.dataset.themeToggle){S.theme=S.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;persistPreferences();render();return;}if(target.dataset.exportBackup){exportBackup();return;}if(target.dataset.view){S.view=target.dataset.view==='list'?'list':'grid';persistPreferences();render();return;}if(target.dataset.resetFilters){S.filter='all';S.genre='';S.status='all';S.sort='popular';S.query='';render();return;}if(target.dataset.filter){S.filter=target.dataset.filter;render();return;}if(target.dataset.save){toggleSave(target.dataset.save);return;}if(target.dataset.complete){complete(target.dataset.complete,Number(target.dataset.chapter));return;}});
 document.addEventListener('change',function(e){if(e.target.id==='sort-select'){S.sort=e.target.value;render();}if(e.target.id==='genre-select'){S.genre=e.target.value;render();}if(e.target.id==='status-select'){S.status=e.target.value;render();}});
 document.addEventListener('input',function(e){if(e.target.id!=='search-input')return;S.query=e.target.value;clearTimeout(S.searchTimer);S.searchTimer=setTimeout(function(){var pos=e.target.selectionStart;render();var field=document.getElementById('search-input');if(field){field.focus();try{field.setSelectionRange(pos,pos);}catch(err){}}},240);});
+if(tg&&tg.BackButton){try{tg.BackButton.onClick(function(){var p=path();go(p[0]==='read'?'detail/'+(p[1]||''):p[0]==='detail'?'explore':'home');});}catch(e){}}
+document.addEventListener('click',function(e){if(tg&&tg.HapticFeedback&&e.target.closest('button[data-go],button[data-save],button[data-filter]')){try{tg.HapticFeedback.selectionChanged();}catch(err){}}},{capture:true});
 window.addEventListener('hashchange',function(){render();window.scrollTo(0,0);});
 Promise.allSettled([call('/api/comics?limit=48'),call('/api/home')]).then(function(result){if(result[0].status==='fulfilled'){S.comics=result[0].value;}else{S.error='Tidak dapat terhubung ke katalog. Coba muat ulang halaman.';}if(result[1].status==='fulfilled')S.home=result[1].value;S.loading=false;render();bookmarks();loadHistory();loadCheckins();});
 render();
