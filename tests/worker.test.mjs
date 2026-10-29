@@ -12,6 +12,7 @@ test('health responds without credentials or D1', async () => {
   const result = await json(response);
   assert.equal(result.success, true);
   assert.equal(result.data.status, 'ok');
+  assert.equal(result.data.version, '0.3.0');
 });
 
 test('static Mini App is served with restrictive CSP', async () => {
