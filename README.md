@@ -23,6 +23,19 @@ Rancangan aplikasi mobile dibuat secara independen dengan mengambil **pola inter
 - Tema terang/gelap, progres scroll reader, dan ekspor cadangan JSON berisi bookmark serta progres. Ekspor belum mendukung impor otomatis.
 - Ilustrasi seed tetap placeholder orisinal; tidak disertakan media berhak cipta dari aplikasi referensi.
 
+## Scanstoon Spectrum (UI v0.3)
+
+Pembaruan desain yang langsung digunakan oleh Telegram Mini App, tanpa mengubah kontrak API Worker maupun skema D1:
+
+- Beranda dengan ucapan pembuka, pintasan pencarian, banner editorial, dan akses cepat pustaka/aktivitas.
+- Sistem visual navy OLED dengan aksen cyan–magenta; kartu katalog berlabel status **ongoing / tamat / hiatus**.
+- Navigasi mobile **floating bottom bar**, jarak aman untuk gesture area perangkat, dan interaksi touch-friendly.
+- Integrasi Telegram WebApp: **BackButton**, perluasan layar, header/background color, dan haptic feedback dengan fallback browser.
+- Tampilan katalog, detail, pembaca vertikal, tema terang/gelap, ekspor pustaka, dan penyimpanan Telegram tetap kompatibel.
+- Menghormati preferensi `prefers-reduced-motion` dan menyediakan indikator fokus untuk navigasi keyboard.
+
+**Catatan:** Kartu sampul menggunakan bentuk dan gradasi CSS orisinal, bukan gambar komik berhak cipta. Semua layanan data dan konfigurasi bot tetap mengikuti dokumentasi sebelumnya.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
