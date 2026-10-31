@@ -255,7 +255,28 @@ html[data-theme="dark"] .profile-screen .p-social-secondary{background:#2c3a51;c
 @media(max-width:900px){body.profile-active .content{padding:0 9px 110px}}
 @media(max-width:650px){body.profile-active .content{padding:0 0 110px}body.profile-active .topbar{height:65px}.profile-screen{border-radius:26px 26px 0 0;padding:0 15px 20px;max-width:none;min-height:calc(100vh - 120px)}.profile-screen .p-grid-card{margin-top:6px}.profile-screen .p-header{padding-top:22px}.profile-screen .p-quick{min-height:72px}.profile-screen .p-banner{min-height:75px}}
 @media(prefers-reduced-motion:no-preference){.profile-screen .p-quick,.profile-screen .p-list-row,.profile-screen .p-theme-choice{transition:background-color .16s ease,transform .16s ease}.profile-screen .p-quick:active{transform:scale(.95)}}
- .profile-screen .p-theme-caption{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:10px 7px 3px}.profile-screen .p-theme-caption button{border:0;background:none;color:var(--ps-sub);font-size:10px;font-weight:800;padding:5px} .profile-screen .p-stat-symbol svg{width:17px;height:17px}\n</style>
+ .profile-screen .p-theme-caption{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:10px 7px 3px}.profile-screen .p-theme-caption button{border:0;background:none;color:var(--ps-sub);font-size:10px;font-weight:800;padding:5px} .profile-screen .p-stat-symbol svg{width:17px;height:17px}\n
+/* Scanstoon Profile v0.5: milestone cards based on real history/bookmark/check-in counts. */
+.profile-screen .p-achievements{padding:16px;margin:9px 0;border:1px solid var(--ps-line)}
+.profile-screen .p-achievements-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.profile-screen .p-achievements-head small{display:block;color:var(--ps-accent);font-weight:850;letter-spacing:.12em;font-size:9px}
+.profile-screen .p-achievements-head strong{display:block;font-size:15px;margin-top:3px}
+.profile-screen .p-achievements-head .p-achievement-close{width:30px;height:30px;border:0;border-radius:10px;background:var(--ps-chip);font-size:20px}
+.profile-screen .p-achievements > p{margin:9px 0 15px;font-size:11px;line-height:1.6;color:var(--ps-sub)}
+.profile-screen .p-achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.profile-screen .p-achievement{border:1px solid var(--ps-line);background:var(--ps-chip);border-radius:12px;padding:12px 10px;min-width:0}
+.profile-screen .p-achievement.unlocked{border-color:#3cbb9070;background:linear-gradient(130deg,#1aab7a13,var(--ps-chip))}
+.profile-screen .p-achievement-top{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.profile-screen .p-achievement-top span{width:25px;height:25px;border-radius:8px;background:#dcd4fa;color:#6743c5;display:grid;place-items:center;flex-shrink:0;font-weight:900}
+.profile-screen .p-achievement.unlocked .p-achievement-top span{background:#ccefe2;color:#159b70}
+.profile-screen .p-achievement-top strong{font-size:10px;line-height:1.3}
+.profile-screen .p-achievement > small{display:block;font-size:9px;line-height:1.4;color:var(--ps-sub);min-height:26px}
+.profile-screen .p-achievement-track{height:5px;background:#d9dce7;border-radius:9px;overflow:hidden;margin:9px 0 3px}
+.profile-screen .p-achievement-track i{display:block;height:100%;background:linear-gradient(90deg,#5d66d6,#28bd95);border-radius:9px}
+.profile-screen .p-achievement-count{font-size:10px;font-weight:850}
+@media(max-width:350px){.profile-screen .p-achievement-grid{grid-template-columns:1fr}}
+
+</style>
 </head>
 <body>
 <header class="topbar">
@@ -282,7 +303,17 @@ var preferences=readStore('scanstoon_preferences',{});
 var checkins=readStore('scanstoon_checkins',[]);
 var S={comics:[],home:null,details:{},saved:Array.isArray(saved)?saved:[],history:Array.isArray(history)?history:[],auth:!!initData,loading:true,error:'',filter:'all',sort:'popular',query:'',genre:'',status:'all',view:preferences.view==='list'?'list':'grid',theme:['light','dark','system'].includes(preferences.theme)?preferences.theme:'system',checkins:Array.isArray(checkins)?checkins.filter(function(k){return /^\d{8}$/.test(k);}).slice(0,45):[]};
 function currentTheme(){return S.theme==='system'?((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'):S.theme;}
-function applyTheme(){document.documentElement.dataset.theme=currentTheme();}
+function applyTheme(){
+var theme=currentTheme();
+document.documentElement.dataset.theme=theme;
+if(tg){
+ try{
+  if(typeof tg.setHeaderColor==='function')tg.setHeaderColor(theme==='dark'?'#101729':'#e8eaf1');
+  if(typeof tg.setBackgroundColor==='function')tg.setBackgroundColor(theme==='dark'?'#090d19':'#e8eaf1');
+  if(typeof tg.setBottomBarColor==='function')tg.setBottomBarColor(theme==='dark'?'#11182a':'#fcfcff');
+ }catch(e){}
+}
+}
 applyTheme();
 if(window.matchMedia){var darkMedia=window.matchMedia('(prefers-color-scheme: dark)');if(darkMedia.addEventListener)darkMedia.addEventListener('change',function(){if(S.theme==='system'){applyTheme();render();}});}
 S.telegramPages={};S.telegramLoading={};S.profilePanel='';S.pendingScroll='';
@@ -354,7 +385,7 @@ return '<div class="eyebrow">SCANSTOON DISCOVERY</div><h1 class="page-title">Tem
 +'<div class="result-bar"><span class="result-note">'+rows.length+' cerita ditemukan</span><div class="view-switch" role="group" aria-label="Tampilan katalog"><button data-view="grid" aria-pressed="'+(S.view==='grid')+'" class="'+(S.view==='grid'?'active':'')+'">Grid</button><button data-view="list" aria-pressed="'+(S.view==='list')+'" class="'+(S.view==='list'?'active':'')+'">Daftar</button></div></div>'
 +(rows.length?'<div class="catalog-results '+(S.view==='list'?'catalog-list':'')+'">'+cards(rows).replace('class="card-grid"','class="card-grid '+(S.view==='list'?'list-view':'')+'"')+'</div>':empty('Belum ada cerita yang cocok','Atur ulang filter atau coba kata kunci lain.'));
 }
-function library(){var list=S.saved.map(function(slug){return S.comics.find(function(c){return c.slug===slug;});}).filter(Boolean);var recent=S.history.map(function(x){return S.comics.find(function(c){return c.slug===x.slug;});}).filter(Boolean);return '<div class="eyebrow">YOUR PERSONAL SPACE</div><h1 class="page-title">Koleksi <span class="gradient-text">saya.</span></h1><p class="muted">Semua kisah yang ingin kamu simpan, di satu tempat.</p>'+(S.auth?'':'<div class="notice">Mode browser: koleksi dan progres tersimpan di perangkat ini. Buka melalui Telegram untuk sinkronisasi antarperangkat.</div>')+'<section class="section"><div class="section-header"><div><h2 class="section-title">Disimpan <span class="muted">('+list.length+')</span></h2><p class="section-sub">Daftar cerita favoritmu</p></div></div>'+(list.length?cards(list):empty('Koleksimu masih kosong','Tekan ikon bookmark pada judul yang ingin kamu baca nanti.'))+'</section><section id="reading-history" class="section"><div class="section-header"><div><h2 class="section-title">Terakhir dibaca</h2><p class="section-sub">Kembali ke petualanganmu</p></div></div>'+(recent.length?'<div class="update-list">'+recent.map(function(c){var h=S.history.find(function(x){return x.slug===c.slug;})||{};return '<button class="update-item" data-go="read/'+safe(c.slug)+'/'+(h.chapter_number||1)+'">'+art(c)+'<div class="update-copy"><b>'+safe(c.title)+'</b><small>Chapter '+(h.chapter_number||1)+' · '+(h.percent||0)+'% selesai</small></div><span class="update-arrow">›</span></button>';}).join('')+'</div>':empty('Belum ada riwayat baca','Mulai membaca preview karya original untuk melihat progres.'))+'</section>';}
+function library(){var list=S.saved.map(function(slug){return S.comics.find(function(c){return c.slug===slug;});}).filter(Boolean);var recent=S.history.map(function(x){return S.comics.find(function(c){return c.slug===x.slug;});}).filter(Boolean);return '<div class="eyebrow">YOUR PERSONAL SPACE</div><h1 class="page-title">Koleksi <span class="gradient-text">saya.</span></h1><p class="muted">Semua kisah yang ingin kamu simpan, di satu tempat.</p>'+(S.auth?'':'<div class="notice">Mode browser: koleksi dan progres tersimpan di perangkat ini. Buka melalui Telegram untuk sinkronisasi antarperangkat.</div>')+'<section class="section" id="saved-titles"><div class="section-header"><div><h2 class="section-title">Disimpan <span class="muted">('+list.length+')</span></h2><p class="section-sub">Daftar cerita favoritmu</p></div></div>'+(list.length?cards(list):empty('Koleksimu masih kosong','Tekan ikon bookmark pada judul yang ingin kamu baca nanti.'))+'</section><section id="reading-history" class="section"><div class="section-header"><div><h2 class="section-title">Terakhir dibaca</h2><p class="section-sub">Kembali ke petualanganmu</p></div></div>'+(recent.length?'<div class="update-list">'+recent.map(function(c){var h=S.history.find(function(x){return x.slug===c.slug;})||{};return '<button class="update-item" data-go="read/'+safe(c.slug)+'/'+(h.chapter_number||1)+'">'+art(c)+'<div class="update-copy"><b>'+safe(c.title)+'</b><small>Chapter '+(h.chapter_number||1)+' · '+(h.percent||0)+'% selesai</small></div><span class="update-arrow">›</span></button>';}).join('')+'</div>':empty('Belum ada riwayat baca','Mulai membaca preview karya original untuk melihat progres.'))+'</section>';}
 
 function dayKey(offset){var d=new Date();d.setDate(d.getDate()+(offset||0));return String(d.getFullYear())+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
 function activityStreak(){var start=S.checkins.includes(dayKey(0))?0:-1,count=0;for(var i=start;i>-366;i--){if(S.checkins.includes(dayKey(i)))count++;else break;}return count;}
@@ -366,6 +397,21 @@ return '<div class="eyebrow">SCANSTOON READING RITUAL</div><h1 class="page-title
 +'<div class="panel-box"><div class="eyebrow">CATATAN TRANSPARANSI</div><p>Aktivitas harian tersimpan '+(S.auth&&cloud?'di Telegram CloudStorage dan salinan lokal':'lokal di perangkat ini')+'. Check-in tidak membuktikan durasi membaca dan tidak menambah saldo apa pun.</p><button class="btn btn-outline" data-go="library">Lihat bacaan tersimpan</button></div>';
 }
 
+function profileAchievements(){
+var read=S.history.length,saved=S.saved.length,days=S.checkins.length,streak=activityStreak();
+var milestones=[
+ {name:'Langkah Pertama',desc:'Selesaikan satu judul',now:read,goal:1},
+ {name:'Penjelajah Cerita',desc:'Baca lima judul',now:read,goal:5},
+ {name:'Kolektor Cerita',desc:'Simpan lima judul',now:saved,goal:5},
+ {name:'Kebiasaan Baik',desc:'Check-in tiga hari beruntun',now:streak,goal:3},
+ {name:'Pembaca Setia',desc:'Baca sepuluh judul',now:read,goal:10},
+ {name:'Tujuh Hari Aktif',desc:'Check-in pada tujuh hari',now:days,goal:7}
+];
+var unlocked=milestones.filter(function(m){return m.now>=m.goal;}).length;
+return '<section class="p-card p-achievements" id="p-panel-achievements" role="region" aria-label="Pencapaian membaca"><div class="p-achievements-head"><div><small>PENCAPAIAN MEMBACA</small><strong>'+unlocked+' dari '+milestones.length+' tercapai</strong></div><button data-profile-action="achievements" class="p-achievement-close" aria-label="Tutup pencapaian">×</button></div>'
++'<p>Pencapaian dihitung dari aktivitas membaca dan check-in yang tersedia; tidak memiliki nilai uang atau hadiah.</p>'
++'<div class="p-achievement-grid">'+milestones.map(function(m){var done=m.now>=m.goal,amount=Math.min(m.now,m.goal);return '<div class="p-achievement '+(done?'unlocked':'locked')+'"><div class="p-achievement-top"><span aria-hidden="true">'+(done?'✓':'◇')+'</span><strong>'+safe(m.name)+'</strong></div><small>'+safe(m.desc)+'</small><div class="p-achievement-track" role="progressbar" aria-label="'+safe(m.name)+'" aria-valuemin="0" aria-valuemax="'+m.goal+'" aria-valuenow="'+amount+'"><i style="width:'+(Math.round(amount/m.goal*100))+'%"></i></div><span class="p-achievement-count">'+amount+' / '+m.goal+'</span></div>';}).join('')+'</div></section>';
+}
 function profilePanelContent(section,who){
 var name=who?String((who.first_name||'')+' '+(who.last_name||'')).trim():'Pembaca Scanstoon';
 if(section==='identity')return '<strong>Identitas pembaca</strong><div>Nama: '+safe(name)+'</div><div>Username: '+(who&&who.username?'@'+safe(who.username):'Tidak tersedia')+'</div><div>Status: '+(S.auth?'Dibuka melalui Telegram':'Mode browser lokal')+'</div>';
@@ -385,7 +431,7 @@ var username=who&&who.username?'@'+String(who.username):S.auth?'Akun Telegram':'
 var completed=S.history.length,step=completed%10,level=Math.floor(completed/10)+1;
 var shortcuts=[
  ['activity','Aktivitas','activity'],['explore','Katalog','explore'],['share','Bagikan','share'],['library','Koleksi','library'],
- ['bookmark','Favorit','library'],['layers','Genre','genre'],['history','Riwayat','history'],['star','Pencapaian','activity'],
+ ['bookmark','Favorit','favorites'],['layers','Genre','genre'],['history','Riwayat','history'],['star','Pencapaian','achievements'],
  ['settings','Pengaturan','settings'],['spark','Terbaru','latest'],['message','Bantuan','support'],['info','Tentang','about']
  ];
 var quick=shortcuts.map(function(a){return '<button class="p-quick" data-profile-action="'+a[2]+'" aria-label="'+a[1]+'">'+icon(a[0])+'<span>'+a[1]+'</span></button>';}).join('');
@@ -400,6 +446,7 @@ return '<div class="profile-screen" id="profile-sheet">'
 +'<div class="p-stat-row"><button class="p-stat" data-go="library"><span class="p-stat-symbol">'+icon('bookmark')+'</span><span class="p-stat-copy"><strong>'+S.saved.length+'</strong><small>Disimpan</small></span></button><button class="p-stat" data-profile-action="history"><span class="p-stat-symbol">'+icon('history')+'</span><span class="p-stat-copy"><strong>'+completed+'</strong><small>Riwayat baca</small></span></button><button class="p-stat-add" data-go="explore" aria-label="Jelajahi lebih banyak komik">+</button></div>'
 +'<button class="p-banner" data-go="explore"><span class="p-banner-copy"><small>SCANSTOON ORIGINAL</small><b>Satu panel,<br>seribu semesta.</b><span>Temukan bacaan berikutnya ›</span></span><span class="p-banner-art" aria-hidden="true">S</span></button>'
 +'<section class="p-card p-grid-card" aria-label="Akses cepat"><div class="p-grid">'+quick+'</div></section>'
++(S.profilePanel==='achievements'?profileAchievements():'')
 +groups.map(function(group,i){return '<section class="p-card p-list" aria-label="'+(i?'Akses dan bantuan':'Menu profil')+'">'+group.map(function(item){return profileMenuRow(item[0],item[1],item[2]);}).join('')
 +((i===0&&['identity','alerts'].includes(S.profilePanel))||(i===1&&['support','about'].includes(S.profilePanel))?'<div class="p-subpanel" id="p-panel-'+S.profilePanel+'" role="region" aria-live="polite">'+profilePanelContent(S.profilePanel,who)+'</div>':'')+'</section>';}).join('')
 +'<div class="p-theme-caption" id="profile-themes"><strong>Tampilan aplikasi</strong><button type="button" data-theme-toggle="1" aria-label="Ganti cepat tema terang atau gelap">Ganti cepat</button></div>'
@@ -496,12 +543,13 @@ toast('Tautan berbagi: scanstoon.ikomik-core.workers.dev');
 }
 function handleProfileAction(action){
 if(action==='history'){S.pendingScroll='reading-history';go('library');return;}
+if(action==='favorites'){S.pendingScroll='saved-titles';go('library');return;}
 if(action==='latest'){S.sort='latest';S.filter='all';go('explore');return;}
 if(action==='genre'){S.filter='all';S.genre='';go('explore');return;}
 if(action==='share'){shareScanstoon();return;}
 if(action==='backup'){exportBackup();return;}
 if(action==='settings'){var area=document.getElementById('profile-themes');if(area)area.scrollIntoView({behavior:'smooth',block:'center'});return;}
-if(['identity','alerts','support','about'].includes(action)){S.profilePanel=S.profilePanel===action?'':action;render();if(S.profilePanel)requestAnimationFrame(function(){var item=document.getElementById('p-panel-'+action);if(item)item.scrollIntoView({behavior:'smooth',block:'nearest'});});return;}
+if(['identity','alerts','support','about','achievements'].includes(action)){S.profilePanel=S.profilePanel===action?'':action;render();if(S.profilePanel)requestAnimationFrame(function(){var item=document.getElementById('p-panel-'+action);if(item)item.scrollIntoView({behavior:'smooth',block:'nearest'});});return;}
 if(['activity','explore','library'].includes(action))go(action);
 }
 document.addEventListener('click',function(e){var target=e.target.closest('button');if(!target)return;if(target.dataset.go){go(target.dataset.go);return;}if(target.dataset.profileAction){handleProfileAction(target.dataset.profileAction);return;}if(target.dataset.themeChoice){S.theme=target.dataset.themeChoice;applyTheme();persistPreferences();render();return;}if(target.dataset.checkin){dailyCheckin();return;}if(target.dataset.themeToggle){S.theme=currentTheme()==='dark'?'light':'dark';applyTheme();persistPreferences();render();return;}if(target.dataset.exportBackup){exportBackup();return;}if(target.dataset.view){S.view=target.dataset.view==='list'?'list':'grid';persistPreferences();render();return;}if(target.dataset.resetFilters){S.filter='all';S.genre='';S.status='all';S.sort='popular';S.query='';render();return;}if(target.dataset.filter){S.filter=target.dataset.filter;render();return;}if(target.dataset.save){toggleSave(target.dataset.save);return;}if(target.dataset.complete){complete(target.dataset.complete,Number(target.dataset.chapter));return;}});
