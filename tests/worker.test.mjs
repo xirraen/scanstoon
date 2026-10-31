@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Script} from 'node:vm';
+import {Script, runInNewContext} from 'node:vm';
 import worker from '../dist/worker.js';
 
 const make = (path, init) => new Request('https://scanstoon.example' + path, init);
@@ -12,7 +12,7 @@ test('health responds without credentials or D1', async () => {
   const result = await json(response);
   assert.equal(result.success, true);
   assert.equal(result.data.status, 'ok');
-  assert.equal(result.data.version, '0.3.0');
+  assert.equal(result.data.version, '0.4.0');
 });
 
 test('static Mini App is served with restrictive CSP', async () => {
@@ -32,6 +32,64 @@ test('video-inspired Scanstoon mobile interface is valid and original', async ()
     assert.ok(html.includes(feature), 'missing UI: ' + feature);
   }
   assert.doesNotMatch(html, /ЯМИКО|YAMIKO/i, 'third-party brand should not appear');
+});
+
+
+test('Scanstoon profile sheet renders actual counters, menu cards and themes', async () => {
+  const response = await worker.fetch(make('/'), {});
+  const html = await response.text();
+  assert.match(html, /profile-screen/);
+  assert.match(html, /p-grid-card/);
+  assert.match(html, /p-theme-choice/);
+  const inline = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(inline, 'client JavaScript exists');
+  assert.doesNotThrow(() => new Script(inline), 'JavaScript is valid');
+  const elements = new Map(['content','bottomnav','sidenav','avatar-letter','toast','reader-progress'].map(id => [id, {innerHTML:'',style:{},textContent:'',classList:{add(){},remove(){}}}]));
+  const listeners = new Map();
+  const stored = new Map();
+  const document = {
+    documentElement: {dataset:{}},
+    body: {classList:{toggle() {}}},
+    getElementById(id){return elements.get(id)||null;},
+    addEventListener(type,listener){const list=listeners.get(type)||[];list.push(listener);listeners.set(type,list);}
+  };
+  const window = {
+    Telegram:{WebApp:{initData:'',initDataUnsafe:{user:{first_name:'<img src=x onerror=alert(1)>',username:'reader'}},ready(){},expand(){}}},
+    matchMedia(){return {matches:false,addEventListener(){}};},
+    addEventListener(){},
+    scrollTo(){}
+  };
+  const location={hash:'#/profile'};
+  const fetch=async url => ({
+    ok:true,
+    async json(){return {success:true,data:url.startsWith('/api/comics')?[]:{popular:[],latest:[]}};}
+  });
+  const globals={document,window,location,fetch,URL,Blob,console,Date,Promise,
+    navigator:{},
+    localStorage:{getItem(key){return stored.get(key)||null;},setItem(key,val){stored.set(key,val);}},
+    clearTimeout(){},setTimeout(){return 1;},requestAnimationFrame(callback){callback();},innerHeight:800,scrollY:0
+  };
+  runInNewContext(inline,globals,{timeout:2000});
+  await new Promise(resolve => setImmediate(resolve));
+  let content=elements.get('content').innerHTML;
+  assert.match(content, /class="profile-screen"/);
+  assert.match(content, /Penjelajah cerita/);
+  assert.match(content, /0 \/ 10/);
+  assert.match(content, /Katalog/);
+  assert.match(content, /Notifikasi/);
+  assert.match(content, /Cadangkan data/);
+  assert.match(content, /data-theme-choice="system"/);
+  assert.match(content, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.doesNotMatch(content, /<img src=x/);
+  const click=listeners.get('click')[0];
+  click({target:{closest(){return {dataset:{profileAction:'identity'}};}}});
+  content=elements.get('content').innerHTML;
+  assert.match(content, /Identitas pembaca/);
+  click({target:{closest(){return {dataset:{themeChoice:'light'}};}}});
+  assert.equal(document.documentElement.dataset.theme,'light');
+  assert.equal(JSON.parse(stored.get('scanstoon_preferences')).theme,'light');
+  click({target:{closest(){return {dataset:{profileAction:'history'}};}}});
+  assert.equal(location.hash,'#/library');
 });
 
 test('Telegram webhook rejects unauthenticated requests', async () => {

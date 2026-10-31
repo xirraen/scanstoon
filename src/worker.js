@@ -36,7 +36,7 @@ async function telegramUser(request, env) {
   return {id,display_name:String(user.first_name||''),username:String(user.username||'')};
 }
 async function api(request,env,url) {
-  if (url.pathname==='/api/health') return good({status:'ok',version:'0.3.0',service:'scanstoon'});
+  if (url.pathname==='/api/health') return good({status:'ok',version:'0.4.0',service:'scanstoon'});
   if (!env.DB) return fail(503,'DATABASE_UNAVAILABLE','Database belum dikonfigurasi.');
   const method=request.method;
   if (method==='GET' && url.pathname==='/api/telegram/status') {

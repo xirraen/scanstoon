@@ -36,6 +36,18 @@ Pembaruan desain yang langsung digunakan oleh Telegram Mini App, tanpa mengubah 
 
 **Catatan:** Kartu sampul menggunakan bentuk dan gradasi CSS orisinal, bukan gambar komik berhak cipta. Semua layanan data dan konfigurasi bot tetap mengikuti dokumentasi sebelumnya.
 
+## Scanstoon Profile Sheet (UI v0.4)
+
+Halaman Akun ditata ulang berdasarkan **struktur pengalaman** video referensi yang diberikan pengguna (bukan menyalin merek, aset visual atau kode pihak lain).
+
+- Tampilan profil mobile menggunakan susunan `bottom sheet`, avatar monogram Scanstoon, nama dan username Telegram (jika tersedia), tombol tutup, kartu level berbasis **jumlah judul dalam riwayat baca**, dan statistik bookmark/riwayat nyata. Tidak menampilkan mata uang semu.
+- Banner Scanstoon bergaya orisinal dan 12 pintasan cepat: Aktivitas, Katalog, Bagikan, Koleksi, Favorit, Genre, Riwayat, Pencapaian, Pengaturan, Terbaru, Bantuan, Tentang.
+- Daftar informasi profil, status notifikasi (tanpa angka yang dibuat-buat), bookmark, riwayat baca, bagikan, pengaturan, ekspor data dan bantuan melalui bot.
+- Pilihan tema **Sistem, Terang, Gelap**; mengikuti preferensi OS saat memilih Sistem.
+- Pembagian tautan menggunakan Web Share API atau Clipboard API jika tersedia; fallback berupa petunjuk URL.
+- Data profil Telegram menggunakan `initDataUnsafe.user` hanya untuk tampilan; pengesahan identitas untuk API privat tetap pada server menggunakan `initData`.
+- Integrasi Telegram CloudStorage dan alur pembaca tetap tidak diubah. Tidak membuat fitur poin, notifikasi, toko, transaksi, atau bonus fiktif.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
