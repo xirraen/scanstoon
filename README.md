@@ -48,6 +48,14 @@ Halaman Akun ditata ulang berdasarkan **struktur pengalaman** video referensi ya
 - Data profil Telegram menggunakan `initDataUnsafe.user` hanya untuk tampilan; pengesahan identitas untuk API privat tetap pada server menggunakan `initData`.
 - Integrasi Telegram CloudStorage dan alur pembaca tetap tidak diubah. Tidak membuat fitur poin, notifikasi, toko, transaksi, atau bonus fiktif.
 
+## Scanstoon Profile v0.5 (pencapaian nyata)
+
+Penyempurnaan dari Profile Sheet v0.4:
+- **Pencapaian** bukan lagi tautan umum ke Aktivitas: 6 milestone ditampilkan di panel profil menggunakan riwayat judul, bookmark, hari check-in, dan streak yang benar-benar tersedia; tidak ada poin, mata uang virtual atau reward finansial.
+- Pintasan **Favorit** membuka bagian bookmark di Pustaka, sedangkan **Riwayat** menuju bagian histori yang terpisah.
+- Saat mode sistem/terang/gelap berubah, warna header, background dan bottom bar Telegram disesuaikan jika API Telegram tersedia.
+- Pengujian antarmuka otomatis menguji panel milestone, anchor Favorit dan sinkronisasi tema Telegram.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
