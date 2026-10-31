@@ -82,7 +82,7 @@ test('Scanstoon profile sheet renders actual counters, menu cards and themes', a
   assert.match(content, /Cadangkan data/);
   assert.match(content,/Poin/);
   assert.match(content,/Stars dipakai/);
-  assert.match(content,/Paspor \\.toon/);
+  assert.ok(content.includes('Paspor .toon'));
   assert.doesNotMatch(content,/Stars (saldo|dimiliki)/i);
   assert.match(content, /data-theme-choice="system"/);
   assert.match(content, /&lt;img src=x onerror=alert\(1\)&gt;/);
