@@ -12,7 +12,7 @@ test('health responds without credentials or D1', async () => {
   const result = await json(response);
   assert.equal(result.success, true);
   assert.equal(result.data.status, 'ok');
-  assert.equal(result.data.version, '0.5.0');
+  assert.equal(result.data.version, '0.6.0');
 });
 
 test('static Mini App is served with restrictive CSP', async () => {
@@ -80,10 +80,18 @@ test('Scanstoon profile sheet renders actual counters, menu cards and themes', a
   assert.match(content, /Katalog/);
   assert.match(content, /Notifikasi/);
   assert.match(content, /Cadangkan data/);
+  assert.match(content,/Poin/);
+  assert.match(content,/Stars dipakai/);
+  assert.ok(content.includes('Paspor .toon'));
+  assert.doesNotMatch(content,/Stars (saldo|dimiliki)/i);
   assert.match(content, /data-theme-choice="system"/);
   assert.match(content, /&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.doesNotMatch(content, /<img src=x/);
   const click=listeners.get('click')[0];
+  click({target:{closest(){return {dataset:{profileAction:'passport'}};}}});
+  content=elements.get('content').innerHTML;
+  assert.match(content,/id="p-panel-passport"/);
+  assert.match(content,/Buka lewat Telegram untuk membeli/);
   click({target:{closest(){return {dataset:{profileAction:'identity'}};}}});
   content=elements.get('content').innerHTML;
   assert.match(content, /Identitas pembaca/);

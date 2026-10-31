@@ -35,8 +35,78 @@ async function telegramUser(request, env) {
   await env.DB.prepare('INSERT INTO users(id,telegram_id,display_name,username) VALUES(?,?,?,?) ON CONFLICT(telegram_id) DO UPDATE SET display_name=excluded.display_name,username=excluded.username').bind(id,String(user.id),String(user.first_name||'').slice(0,128),String(user.username||'').slice(0,64)).run();
   return {id,display_name:String(user.first_name||''),username:String(user.username||'')};
 }
+// Digital goods in Telegram must be paid exclusively with Telegram Stars (XTR).
+// Premium is an account badge + digital .toon passport. No automatic token or NFT issuance.
+const PASSPORT_STARS_DEFAULT=250;
+function passportPrice(env){
+  const value=Number(env.PASSPORT_STARS_PRICE||PASSPORT_STARS_DEFAULT);
+  return Number.isSafeInteger(value)&&value>=1&&value<=10000?value:PASSPORT_STARS_DEFAULT;
+}
+function passportSalesEnabled(env){return env.PASSPORT_SALES_ENABLED==='true';}
+async function passportStatus(env,user){
+  const [entitled,spent]=await Promise.all([
+    env.DB.prepare('SELECT id,granted_at FROM passport_entitlements WHERE user_id=?').bind(user.id).first(),
+    env.DB.prepare("SELECT COALESCE(SUM(stars_amount),0) AS amount FROM passport_orders WHERE user_id=? AND status='paid'").bind(user.id).first()
+  ]);
+  return {premium:!!entitled,passport_id:entitled?'TOON-'+user.id.toUpperCase():null,member_since:entitled?.granted_at||null,stars_spent:Math.max(0,Number(spent?.amount||0)),price_stars:passportPrice(env),sales_enabled:passportSalesEnabled(env)};
+}
+async function telegramBotMethod(env,method,payload){
+  const res=await fetch('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/'+method,{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+  });
+  const result=await res.json();
+  if(!res.ok||!result.ok)throw new Error('Telegram Bot API '+method+' returned '+(result.error_code||res.status));
+  return result.result;
+}
+async function passportInvoice(env,user){
+  const price=passportPrice(env),orderId=crypto.randomUUID();
+  await env.DB.prepare("INSERT INTO passport_orders(id,user_id,stars_amount,status) VALUES(?,?,?,'pending')").bind(orderId,user.id,price).run();
+  const link=await telegramBotMethod(env,'createInvoiceLink',{
+    title:'Paspor .toon Premium',
+    description:'Paspor digital dan badge Premium Scanstoon, pembayaran satu kali tanpa langganan.',
+    payload:'toon:'+orderId,currency:'XTR',
+    prices:[{label:'Paspor .toon Premium',amount:price}]
+  });
+  if(typeof link!=='string'||!/^https:\/\/t\.me\//.test(link))throw new Error('Telegram invoice link format invalid');
+  return {url:link,price_stars:price,order_id:orderId};
+}
+function passportPayload(raw){
+  const m=String(raw||'').match(/^toon:([a-f0-9-]{36})$/);
+  return m?m[1]:null;
+}
+async function passportCheckout(env,query){
+  const orderId=passportPayload(query?.invoice_payload);
+  const userId=query?.from?.id;
+  let accepted=false;
+  if(orderId&&Number.isSafeInteger(userId)&&userId>0&&query.currency==='XTR'){
+    const order=await env.DB.prepare("SELECT id,user_id,stars_amount,status,created_at FROM passport_orders WHERE id=?").bind(orderId).first();
+    if(order&&order.user_id==='tg_'+userId&&order.status==='pending'&&Number(query.total_amount)===order.stars_amount){
+      const existing=await env.DB.prepare('SELECT id FROM passport_entitlements WHERE user_id=?').bind(order.user_id).first();
+      const created=new Date(String(order.created_at).replace(' ','T')+'Z').getTime();
+      accepted=!existing&&Number.isFinite(created)&&Date.now()-created<30*60*1000;
+    }
+  }
+  const result=await telegramBotMethod(env,'answerPreCheckoutQuery',{
+    pre_checkout_query_id:String(query.id),ok:accepted,
+    ...(!accepted?{error_message:'Invoice tidak valid, telah kedaluwarsa, atau Paspor sudah aktif. Buka kembali Scanstoon.'}:{})
+  });
+  return {received:true,approved:accepted,answered:result===true};
+}
+async function passportPayment(env,message){
+  const payment=message?.successful_payment,orderId=passportPayload(payment?.invoice_payload);
+  const tgId=message?.from?.id,charge=String(payment?.telegram_payment_charge_id||'');
+  if(!orderId||!Number.isSafeInteger(tgId)||tgId<=0||!charge||charge.length>200||payment.currency!=='XTR')return {received:true,ignored:true};
+  const order=await env.DB.prepare('SELECT id,user_id,status,stars_amount,telegram_payment_charge_id FROM passport_orders WHERE id=?').bind(orderId).first();
+  if(!order||order.user_id!=='tg_'+tgId||Number(payment.total_amount)!==order.stars_amount)return {received:true,ignored:true};
+  if(order.status==='paid')return {received:true,duplicate:true};
+  const result=await env.DB.batch([
+    env.DB.prepare("UPDATE passport_orders SET status='paid',telegram_payment_charge_id=?,paid_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=? AND status='pending' AND stars_amount=?").bind(charge,orderId,order.user_id,order.stars_amount),
+    env.DB.prepare("INSERT OR IGNORE INTO passport_entitlements(id,user_id,source) SELECT ?,user_id,'telegram_stars' FROM passport_orders WHERE id=? AND status='paid' AND telegram_payment_charge_id=?").bind('passport:'+order.user_id,orderId,charge)
+  ]);
+  return {received:true,fulfilled:true};
+}
 async function api(request,env,url) {
-  if (url.pathname==='/api/health') return good({status:'ok',version:'0.5.0',service:'scanstoon'});
+  if (url.pathname==='/api/health') return good({status:'ok',version:'0.6.0',service:'scanstoon'});
   if (!env.DB) return fail(503,'DATABASE_UNAVAILABLE','Database belum dikonfigurasi.');
   const method=request.method;
   if (method==='GET' && url.pathname==='/api/telegram/status') {
@@ -91,6 +161,14 @@ async function api(request,env,url) {
   const user=await telegramUser(request,env);
   if(!user) return fail(401,'UNAUTHORIZED','Buka melalui Telegram untuk menyinkronkan data akun.');
   if(method==='GET'&&url.pathname==='/api/me') return good(user);
+  if(method==='GET'&&url.pathname==='/api/passport')return good(await passportStatus(env,user));
+  if(method==='POST'&&url.pathname==='/api/passport/invoice'){
+    if(!passportSalesEnabled(env))return fail(503,'SALES_NOT_READY','Pembelian Paspor .toon belum diaktifkan oleh pengelola.');
+    const status=await passportStatus(env,user);
+    if(status.premium)return fail(409,'ALREADY_PREMIUM','Paspor .toon Premium sudah aktif.');
+    try{return good(await passportInvoice(env,user));}
+    catch(error){console.error('passport_invoice_failed',String(error));return fail(502,'PAYMENT_UNAVAILABLE','Tidak dapat membuka invoice Telegram Stars saat ini.');}
+  }
   if(method==='GET'&&url.pathname==='/api/bookmarks') {
     const rows=await env.DB.prepare('SELECT c.* FROM bookmarks b JOIN comics c ON c.id=b.comic_id WHERE b.user_id=? ORDER BY b.created_at DESC').bind(user.id).all();
     return good(rows.results.map(mapComic));
@@ -127,8 +205,23 @@ async function telegramWebhook(request,env) {
   let update;
   try{update=await request.json();}catch{return fail(400,'BAD_BODY','JSON tidak valid.');}
   if(update?.channel_post) return await telegramStorageUpdate(update.channel_post,env);
+  if(update?.pre_checkout_query){
+    if(!env.DB)return fail(503,'DATABASE_UNAVAILABLE','Database tidak tersedia.');
+    return good(await passportCheckout(env,update.pre_checkout_query));
+  }
+  if(update?.message?.successful_payment){
+    if(!env.DB)return fail(503,'DATABASE_UNAVAILABLE','Database tidak tersedia.');
+    return good(await passportPayment(env,update.message));
+  }
   const chat=update?.message?.chat?.id;
   const command=String(update?.message?.text||'').trim().split(/\s+/)[0].split('@')[0];
+  if(chat && ['/terms','/paysupport'].includes(command)) {
+    const message=command==='/terms'?
+      'Paspor .toon Premium: paspor digital dan badge Premium Scanstoon untuk akun Telegram pembeli. Pembayaran satu kali via Telegram Stars; tidak membuka chapter eksklusif. Akses berlaku selama layanan Scanstoon beroperasi. Simpan bukti transaksi. Lihat kebijakan/refund di https://github.com/xirraen/scanstoon/issues':
+      'Bantuan pembayaran Paspor .toon: catat charge ID dari bukti Telegram, lalu buat laporan privat ke pengelola bot. Jalur awal: https://github.com/xirraen/scanstoon/issues . Jangan kirim token atau kata sandi.';
+    await telegramBotMethod(env,'sendMessage',{chat_id:chat,text:message});
+    return good({received:true});
+  }
   if(chat && ['/start','/app','/help'].includes(command)) {
     const base=env.APP_URL||new URL(request.url).origin;
     const payload={chat_id:chat,text:'Scanstoon — katalog komik orisinal, daftar bacaan, dan pelacak progres. Buka aplikasinya melalui tombol berikut.',reply_markup:{inline_keyboard:[[{text:'Buka Scanstoon',web_app:{url:base}}]]}};

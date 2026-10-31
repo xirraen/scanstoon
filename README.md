@@ -56,6 +56,19 @@ Penyempurnaan dari Profile Sheet v0.4:
 - Saat mode sistem/terang/gelap berubah, warna header, background dan bottom bar Telegram disesuaikan jika API Telegram tersedia.
 - Pengujian antarmuka otomatis menguji panel milestone, anchor Favorit dan sinkronisasi tema Telegram.
 
+## Paspor .toon Premium (v0.6)
+
+- Profil: kartu **Poin** dihitung sebagai 10 poin per judul yang ada pada riwayat baca dan 2 poin per hari check-in. Poin bersifat indikator aktivitas, **bukan mata uang** yang bisa dicairkan.
+- Kartu **Stars dipakai** adalah total **Telegram Stars yang telah dibayarkan ke Scanstoon** (diverifikasi lewat D1). Bukan saldo Telegram Stars pengguna, karena saldo pribadi tidak tersedia melalui Bot API.
+- **Paspor .toon** menggantikan pintasan Pengaturan. Detail Paspor menampilkan badge, nomor paspor setelah pembelian, pilihan Stars dan persetujuan syarat.
+- Pembelian Paspor digital di Mini App menggunakan **Telegram Stars saja (XTR)**. Telegram melarang pembayaran TON langsung atau mata uang lain untuk barang digital di Mini Apps; karena itu rencana pembayaran US$5 via TON tidak ditawarkan pada checkout Telegram.
+- Harga bawaan **250 XTR**, bukan konversi tetap ke US$5; operator dapat mengubahnya memakai variabel lingkungan `PASSPORT_STARS_PRICE` (integer 1–10.000). **Jangan mengaktifkan penjualan sebelum menetapkan harga dan memastikan kesiapan dukungan/refund.**
+- Penjualan hanya aktif jika `PASSPORT_SALES_ENABLED=true` ditetapkan di binding Cloudflare. Default: **nonaktif**, sehingga tidak dapat menagih pengguna secara tak sengaja. Pengguna dapat melihat detail Paspor tanpa pembelian.
+- Migrasi terlebih dahulu: `migrations/0004_passport_stars.sql` pada D1 database produksi. Tabel pesanan memiliki idempotensi `telegram_payment_charge_id` unik. Server memvalidasi `initData`, mengeluarkan invoice `createInvoiceLink`, memverifikasi `pre_checkout_query`, dan hanya mengaktifkan Premium saat `successful_payment` bertanda tangan dari webhook Telegram.
+- Badge Premium dan Paspor berlaku selama layanan Scanstoon berjalan; ini **bukan Telegram Premium resmi**, tidak termasuk konten komik berbayar dan bukan NFT atau token.
+- Bot menerima `/terms` serta `/paysupport`; kanal operator untuk sengketa melalui [GitHub Issues](https://github.com/xirraen/scanstoon/issues). Pemilik harus merespons sengketa dan refund.
+- Tidak ada metode pembayaran blockchain di UI; wallet TON dapat ditambahkan untuk fitur blockchain terpisah dengan TON Connect, namun **bukan** untuk Premium digital Telegram.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
