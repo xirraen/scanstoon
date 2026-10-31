@@ -375,7 +375,7 @@ if(section==='about')return '<strong>Tentang Scanstoon</strong>Katalog dan reade
 return '';
 }
 function profileMenuRow(symbol,title,action){
-return '<button class="p-list-row" data-profile-action="'+safe(action)+'" aria-label="'+safe(title)+'">'+icon(symbol)+'<span class="p-row-title">'+safe(title)+'</span><span class="p-chevron" aria-hidden="true">›</span></button>';
+return '<button class="p-list-row" data-profile-action="'+safe(action)+'"'+(action==='backup'?' data-export-backup="1"':'')+' aria-label="'+safe(title)+'">'+icon(symbol)+'<span class="p-row-title">'+safe(title)+'</span><span class="p-chevron" aria-hidden="true">›</span></button>';
 }
 function profile(){
 var who=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;
