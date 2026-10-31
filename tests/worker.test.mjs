@@ -47,6 +47,8 @@ test('Scanstoon profile sheet renders actual counters, menu cards and themes', a
   const elements = new Map(['content','bottomnav','sidenav','avatar-letter','toast','reader-progress'].map(id => [id, {innerHTML:'',style:{},textContent:'',classList:{add(){},remove(){}}}]));
   const listeners = new Map();
   const stored = new Map();
+  const headerColors=[];
+  const hashListeners=[];
   const document = {
     documentElement: {dataset:{}},
     body: {classList:{toggle() {}}},
@@ -54,9 +56,9 @@ test('Scanstoon profile sheet renders actual counters, menu cards and themes', a
     addEventListener(type,listener){const list=listeners.get(type)||[];list.push(listener);listeners.set(type,list);}
   };
   const window = {
-    Telegram:{WebApp:{initData:'',initDataUnsafe:{user:{first_name:'<img src=x onerror=alert(1)>',username:'reader'}},ready(){},expand(){}}},
+    Telegram:{WebApp:{initData:'',initDataUnsafe:{user:{first_name:'<img src=x onerror=alert(1)>',username:'reader'}},ready(){},expand(){},setHeaderColor(c){headerColors.push(c)},setBackgroundColor(){},setBottomBarColor(){}}},
     matchMedia(){return {matches:false,addEventListener(){}};},
-    addEventListener(){},
+    addEventListener(event,listener){if(event==='hashchange')hashListeners.push(listener)},
     scrollTo(){}
   };
   const location={hash:'#/profile'};
@@ -88,8 +90,20 @@ test('Scanstoon profile sheet renders actual counters, menu cards and themes', a
   click({target:{closest(){return {dataset:{themeChoice:'light'}};}}});
   assert.equal(document.documentElement.dataset.theme,'light');
   assert.equal(JSON.parse(stored.get('scanstoon_preferences')).theme,'light');
+  assert.ok(headerColors.includes('#e8eaf1'), 'Telegram header changes with light theme');
   click({target:{closest(){return {dataset:{profileAction:'history'}};}}});
   assert.equal(location.hash,'#/library');
+  location.hash='#/profile';
+  hashListeners[0]();
+  click({target:{closest(){return {dataset:{profileAction:'achievements'}};}}});
+  content=elements.get('content').innerHTML;
+  assert.match(content, /PENCAPAIAN MEMBACA/);
+  assert.match(content, /Langkah Pertama/);
+  assert.match(content, /0 dari 6 tercapai/);
+  click({target:{closest(){return {dataset:{profileAction:'favorites'}};}}});
+  assert.equal(location.hash,'#/library');
+  hashListeners[0]();
+  assert.match(elements.get('content').innerHTML, /id="saved-titles"/);
 });
 
 test('Telegram webhook rejects unauthenticated requests', async () => {
