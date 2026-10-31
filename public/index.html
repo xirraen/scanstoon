@@ -301,6 +301,7 @@ html[data-theme="dark"] .profile-screen .p-passport{background:linear-gradient(1
 html[data-theme="dark"] .profile-screen .p-passport h3,html[data-theme="dark"] .profile-screen .p-passport-price{color:#f3eaff}
 html[data-theme="dark"] .profile-screen .p-passport p,html[data-theme="dark"] .profile-screen .p-passport-terms,html[data-theme="dark"] .profile-screen .p-passport-notice{color:#bbb4d0}
 
+.profile-screen .p-premium-label{display:inline-block;vertical-align:middle;font-size:9px;padding:3px 5px;border-radius:6px;background:#eadbff;color:#6035b8;font-weight:950;letter-spacing:.04em;margin-left:3px}
 </style>
 </head>
 <body>
@@ -464,7 +465,7 @@ return '<section class="p-passport" id="p-panel-passport" role="region" aria-lab
 +'<button class="p-passport-buy" data-profile-action="buy-passport" '+(!S.auth||!p||!p.sales_enabled||!S.passportTerms||S.passportPurchasing?'disabled':'')+'>'+(S.passportPurchasing?'Memproses…':S.auth?(p&&p.sales_enabled?'Beli dengan Telegram Stars':'Pembelian belum dibuka'):'Buka lewat Telegram untuk membeli')+'</button>'
 +(S.auth?'':'<p>Untuk membeli dan menyinkronkan status, buka Scanstoon melalui @ScanstoonBot.</p>'))
 +'<p class="p-passport-notice">Pembayaran TON langsung senilai US$5 tidak tersedia untuk Premium di dalam Telegram karena kebijakan barang digital. Saldo Stars pribadi tidak dapat diakses oleh aplikasi; kartu Stars hanya menampilkan Stars yang telah dipakai di Scanstoon.</p>'
-+'<p class="p-passport-notice"><a href="https://github.com/xirraen/scanstoon/issues" target="_blank" rel="noopener noreferrer">Bantuan pembayaran dan ketentuan</a></p></section>';
++'<p class="p-passport-notice"><a href="https://github.com/xirraen/scanstoon/issues" target="_blank" rel="noopener noreferrer">Ketentuan dan laporan masalah (jangan unggah ID transaksi pribadi)</a></p></section>';
 }
 function profile(){
 var who=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;
@@ -484,7 +485,7 @@ var groups=[
 ];
 return '<div class="profile-screen" id="profile-sheet">'
 +'<div class="p-handle" aria-hidden="true"></div>'
-+'<div class="p-header"><div class="p-avatar" aria-hidden="true"><b>S</b></div><div class="p-header-copy"><strong>'+safe(name)+'</strong><small>'+safe(username)+'</small></div><button class="p-close" data-go="home" aria-label="Tutup profil">×</button></div>'
++'<div class="p-header"><div class="p-avatar" aria-hidden="true"><b>S</b></div><div class="p-header-copy"><strong>'+safe(name)+(S.passport&&S.passport.premium?' <span class="p-premium-label">PREMIUM</span>':'')+'</strong><small>'+safe(username)+'</small></div><button class="p-close" data-go="home" aria-label="Tutup profil">×</button></div>'
 +'<section class="p-card" aria-label="Level membaca"><div class="p-level-label"><strong>Penjelajah cerita · Level '+level+'</strong><span>'+step+' / 10</span></div><div class="p-progress-track" role="progressbar" aria-label="Progres menuju level berikutnya" aria-valuenow="'+step+'" aria-valuemin="0" aria-valuemax="10"><i class="p-progress-fill" style="width:'+(step*10)+'%"></i></div><div class="p-level-sub">Level berdasarkan jumlah judul pada riwayat baca · berikutnya dalam '+(10-step)+' judul</div></section>'
 +'<div class="p-stat-row"><button class="p-stat" data-profile-action="achievements"><span class="p-stat-symbol">'+icon('spark')+'</span><span class="p-stat-copy"><strong>'+readingPoints()+'</strong><small>Poin</small></span></button><button class="p-stat" data-profile-action="passport"><span class="p-stat-symbol">'+icon('star')+'</span><span class="p-stat-copy"><strong>'+(S.passport?S.passport.stars_spent:'—')+'</strong><small>Stars dipakai</small></span></button><button class="p-stat-add" data-profile-action="passport" aria-label="Lihat Paspor .toon">+</button></div><p class="p-stat-subnote">Poin = 10 per judul dibaca + 2 per hari check-in • Stars hanya transaksi Scanstoon</p>'
 +'<button class="p-banner" data-go="explore"><span class="p-banner-copy"><small>SCANSTOON ORIGINAL</small><b>Satu panel,<br>seribu semesta.</b><span>Temukan bacaan berikutnya ›</span></span><span class="p-banner-art" aria-hidden="true">S</span></button>'
