@@ -696,22 +696,42 @@ document.addEventListener('input',function(e){if(e.target.id!=='search-input')re
 if(tg&&tg.BackButton){try{tg.BackButton.onClick(function(){var p=path();go(p[0]==='read'?'detail/'+(p[1]||''):p[0]==='detail'?'explore':'home');});}catch(e){}}
 document.addEventListener('click',function(e){if(tg&&tg.HapticFeedback&&e.target.closest('button[data-go],button[data-save],button[data-filter]')){try{tg.HapticFeedback.selectionChanged();}catch(err){}}},{capture:true});
 window.addEventListener('hashchange',function(){render();window.scrollTo(0,0);});
+// Public catalog is the single initial network dependency. Reader, profile,
+// theme and navigation remain usable while it is loading.
+var catalogRequestId=0;
 function loadInitialData(){
- S.loading=true;S.error='';render();
- var settled=false;
+ var ticket=++catalogRequestId;
+ var controller=typeof AbortController==='function'?new AbortController():null;
+ S.networkLoading=true;S.error='';render();
+ var finished=false;
  var timeout=setTimeout(function(){
-  if(!settled){S.loading=false;S.error='Katalog membutuhkan waktu lebih lama dari biasanya.';render();}
- },8000);
- Promise.allSettled([call('/api/comics?limit=48'),call('/api/home')]).then(function(result){
-  settled=true;clearTimeout(timeout);
-  if(result[0].status==='fulfilled'&&Array.isArray(result[0].value)){
-   S.comics=result[0].value;S.error='';
-  }else S.error='Tidak dapat terhubung ke katalog. Coba muat ulang halaman.';
-  if(result[1].status==='fulfilled')S.home=result[1].value;
-  S.loading=false;render();
- }).catch(function(){
-  settled=true;clearTimeout(timeout);S.loading=false;
-  S.error='Katalog sedang tidak tersedia. Coba muat ulang.';render();
+  if(finished||ticket!==catalogRequestId)return;
+  finished=true;
+  if(controller)controller.abort();
+  S.networkLoading=false;
+  S.error=S.comics.length?'Pembaruan katalog terlalu lama; menampilkan daftar tersimpan.':'Koneksi katalog lambat. Pilih Coba lagi untuk mengulang.';
+  render();
+ },5500);
+ call('/api/comics?limit=48',controller?{signal:controller.signal}:{})
+ .then(function(records){
+  if(finished||ticket!==catalogRequestId)return;
+  if(!Array.isArray(records))throw new Error('Format data katalog tidak valid');
+  finished=true;clearTimeout(timeout);
+  S.comics=records;
+  S.home={
+   popular:records.slice(0,8),
+   latest:records.slice().sort(function(a,b){return String(b.updated_at||'').localeCompare(String(a.updated_at||''));}).slice(0,8)
+  };
+  S.networkLoading=false;S.error='';
+  if(records.length)store('scanstoon_public_catalog_v1',{savedAt:Date.now(),items:records});
+  render();
+ })
+ .catch(function(){
+  if(finished||ticket!==catalogRequestId)return;
+  finished=true;clearTimeout(timeout);
+  S.networkLoading=false;
+  S.error=S.comics.length?'Jaringan bermasalah. Menampilkan katalog tersimpan.':'Katalog tidak dapat dihubungi. Periksa jaringan atau coba lagi.';
+  render();
  });
 }
 loadInitialData();
