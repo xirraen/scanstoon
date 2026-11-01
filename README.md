@@ -98,6 +98,19 @@ Perbaikan regresi berdasarkan video pengguna yang menunjukkan dua rute masuk: to
 
 **Penting:** Tombol **Buka Aplikasi** pada profil bot berasal dari **Main Mini App URL di @BotFather**, bukan dari Bot API. Operator harus memastikan BotFather > `/myapps` / pengaturan Main Mini App untuk `@ScanstoonBot` memiliki URL `https://scanstoon.ikomik-core.workers.dev/` (tanpa tautan lama). Perubahan otomatis melalui `setChatMenuButton` hanya mengatur **default menu bot**, bukan URL Main Mini App BotFather atau override menu per-chat. Kontrol sistem Telegram (X, panah, sheet) tidak dapat dihilangkan oleh aplikasi.
 
+## Scanstoon v0.9 — startup tahan jaringan lambat
+
+Video pengguna tanggal 1 November 2026 menunjukkan loading *“Menyiapkan dunia ceritamu…”* yang berulang. Penyebab pada frontend: seluruh halaman diblokir hingga `/api/comics` **dan** `/api/home` sama-sama selesai.
+
+- Home, kartu pembuka, dan lima tab navigasi **langsung tampil** tanpa menunggu data jaringan.
+- Satu permintaan awal `GET /api/comics?limit=48`; rekomendasi Home dihitung dari respons yang sama. Endpoint `/api/home` tetap tersedia untuk kompatibilitas API.
+- Cache publik **terbatas 7 hari**, hanya daftar katalog umum (bukan data akun), disimpan pada `scanstoon_public_catalog_v1` di localStorage. Bila jaringan gagal, katalog terakhir tetap dapat dibuka dengan pemberitahuan jujur.
+- Batas waktu 5,5 detik + `AbortController` jika didukung; tombol **Coba lagi** mengulang pemuatan tanpa mengunci tab.
+- Mode browser dan kedua cara masuk Telegram (Main Mini App maupun tombol chat) tetap menggunakan sumber UI yang sama.
+- Pengujian menggabungkan boot jaringan lambat/tidak pernah selesai, kegagalan network, cache, dan render sukses dalam mode Android/iOS.
+
+Loading 4-kotak sebelum HTML dirender merupakan loading *native Telegram*; warna, logo, dan URL Main Mini App dikelola di BotFather. JavaScript web tidak dapat menyamakan seluruh kontrol native kedua jalur masuk.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
