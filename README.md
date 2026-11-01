@@ -119,6 +119,28 @@ Kini bot `/start`, `/app`, dan `/help` mengirim tombol **URL** ke `https://t.me/
 
 **Catatan:** pesan bot lama dengan tombol `web_app` tidak diperbarui secara otomatis. Buka chat `@ScanstoonBot` dan kirim `/start` lagi untuk mendapatkan tombol baru. Konfigurasi URL Main Mini App tetap berada di BotFather, tidak dapat diubah melalui Bot API. Kontrol / logo loading native Telegram berbeda antar versi klien, tetapi konten aplikasi dari backend adalah satu.
 
+## Scanstoon v0.10 — unified immersive Android/Telegram shell
+
+Rebuild of the **Telegram host integration** after video `1000006945.mp4` documented two *native* frames: top header **X Scanstoon** versus **X Tutup**, and the Android 3-button navigation bar visible in one launch mode.
+
+**What now changes:**
+- The bot chat's **Buka Scanstoon** button links to the same Main Mini App using the official deep link `https://t.me/ScanstoonBot?startapp&mode=fullscreen`.
+- Both Telegram entry modes call Telegram WebApp `requestFullscreen()` on startup (when supported), and listen for `fullscreenChanged`, `fullscreenFailed`, `safeAreaChanged`, `contentSafeAreaChanged` without throwing in old clients.
+- A branded **Scanstoon header** is rendered by our web application. Fullscreen clients reserve 66px minimum top clearance so Telegram's floating system close/menu buttons do not overlap the logo; device safe-area insets are used when available.
+- One consistent **bottom tab bar** uses `--scs-safe-bottom` to respect the host bottom inset, while `setBottomBarColor` matches the Telegram/Android system navigation background to the selected theme.
+- Unsupported Telegram versions can use the **Layar penuh** action to retry. Browser mode never calls Telegram fullscreen.
+- The old multi-endpoint blocking splash remains replaced by the nonblocking/cached v0.9 startup.
+
+**Important OS constraint:** the Android **Back / Home / Recent Apps** system navigation buttons are controlled by Android and the Telegram host, **not HTML/CSS**. We can request fullscreen and matching colors, but cannot guarantee removing those three buttons, or dictate whether Telegram's native close label says “Tutup” or “Scanstoon”. Legacy bot messages can still link to the old entry mode, so use a newly generated `/start` button when verifying. The profile's **Buka Aplikasi** button is configured independently through BotFather and cannot be rewritten by the bot's code.
+
+### Manual device acceptance test
+
+1. Open `@ScanstoonBot`; send a fresh `/start` and use **Buka Scanstoon**.
+2. Close the Mini App, open the bot profile, and choose **Buka Aplikasi**.
+3. Compare the **in-app Scanstoon header, catalog, tab bar, dark/light theme, and clearances around Android system controls**.
+4. On supported Telegram versions both should request fullscreen. On older versions, check that user can still navigate, and that neither bottom tab controls nor the top header is obscured.
+5. Clear old Telegram WebView cache or restart Telegram if an outdated asset is shown.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
