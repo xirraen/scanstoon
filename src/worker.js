@@ -300,6 +300,10 @@ async function telegramWebhook(request,env) {
   }
   const chat=update?.message?.chat?.id;
   const command=String(update?.message?.text||'').trim().split(/\s+/)[0].split('@')[0];
+  if(chat&&command==='/start'&&String(update?.message?.text||'').trim().split(/\s+/)[1]==='paysupport'){
+    if(!env.DB)return fail(503,'DATABASE_UNAVAILABLE','Database tidak tersedia.');
+    return good(await passportSupportCommand(env,update.message,'/paysupport'));
+  }
   if(chat&&command==='/terms'){
     await telegramBotMethod(env,'sendMessage',{chat_id:chat,text:'Paspor .toon: identitas digital dan badge Premium Scanstoon; sekali bayar dalam Telegram Stars, bukan Telegram Premium resmi dan bukan NFT. Tidak termasuk komik berbayar. Pengembalian dana dapat diminta lewat /paysupport. Simpan resi Telegram. Jangan unggah identitas atau bukti transaksi ke issue publik.'});
     return good({received:true});
