@@ -2,7 +2,8 @@
 // Single canonical origin shared by the chat button and Telegram bot menu.
 // BotFather's Main Mini App URL must be set to this same origin separately.
 const SCANSTOON_APP_URL='https://scanstoon.ikomik-core.workers.dev/';
-const SCANSTOON_RELEASE='0.9.0';
+const SCANSTOON_RELEASE='0.9.1';
+const SCANSTOON_MAIN_APP_LINK='https://t.me/ScanstoonBot?startapp';
 const json = (data, status = 200, cache = false) => new Response(JSON.stringify(data), {status, headers: {'Content-Type':'application/json; charset=utf-8','Cache-Control':cache?'public, max-age=60':'no-store','X-Content-Type-Options':'nosniff'}});
 const good = (data, meta) => json({success:true,data,...(meta?{meta}:{})});
 const fail = (status, code, message) => json({success:false,error:{code,message}},status);
@@ -317,8 +318,9 @@ async function telegramWebhook(request,env) {
     return good(await passportSupportCommand(env,update.message,command));
   }
   if(chat && ['/start','/app','/help'].includes(command)) {
-    const base=SCANSTOON_APP_URL;
-    const payload={chat_id:chat,text:'Scanstoon — katalog komik orisinal, daftar bacaan, dan pelacak progres. Buka aplikasinya melalui tombol berikut.',reply_markup:{inline_keyboard:[[{text:'Buka Scanstoon',web_app:{url:base}}]]}};
+    // Using a Main Mini App deep link makes the bot-chat button open the
+    // SAME Telegram native launch mode as the bot profile's Open App button.
+    const payload={chat_id:chat,text:'Scanstoon — katalog komik orisinal, daftar bacaan, dan pelacak progres. Buka aplikasinya melalui tombol berikut.',reply_markup:{inline_keyboard:[[{text:'Buka Scanstoon',url:SCANSTOON_MAIN_APP_LINK}]]}};
     await fetch('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   }
   return good({received:true});

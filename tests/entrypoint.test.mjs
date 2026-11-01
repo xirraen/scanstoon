@@ -18,7 +18,7 @@ test('All entry URLs deliver same v0.9 app, no stale HTML or accidental alternat
   assert.equal(response.status,200,routes[i]);
   assert.equal(html,expected,'different HTML for '+routes[i]);
   assert.match(response.headers.get('cache-control'),/no-store/);
-  assert.equal(response.headers.get('x-scanstoon-release'),'0.9.0');
+  assert.equal(response.headers.get('x-scanstoon-release'),'0.9.1');
  }
  assert.match(expected,/html\[data-runtime="telegram"\] \.topbar\{display:none!important\}/);
  assert.match(expected,/scs_pref_theme/);
@@ -97,7 +97,7 @@ test('Chat button and Main Mini App use same mobile shell and Telegram-synced th
  assert.equal(main.nodes.get('bottomnav').innerHTML,chat.nodes.get('bottomnav').innerHTML);
 });
 
-test('Telegram /start button uses pinned canonical Worker URL',async()=>{
+test('Telegram /start button launches the SAME Main Mini App as profile',async()=>{
  const calls=[];
  const original=globalThis.fetch;
  globalThis.fetch=async(url,opts)=>{
@@ -111,7 +111,8 @@ test('Telegram /start button uses pinned canonical Worker URL',async()=>{
   }),{TELEGRAM_BOT_TOKEN:'test-token',TELEGRAM_WEBHOOK_SECRET:'secret',APP_URL:'https://outdated.example/'});
   assert.equal(response.status,200);
   assert.equal(calls.length,1);
-  assert.equal(calls[0].payload.reply_markup.inline_keyboard[0][0].web_app.url,
-    'https://scanstoon.ikomik-core.workers.dev/');
+  const launch=calls[0].payload.reply_markup.inline_keyboard[0][0];
+  assert.equal(launch.url,'https://t.me/ScanstoonBot?startapp');
+  assert.equal(Object.hasOwn(launch,'web_app'),false,'button must open Main Mini App, not secondary WebView');
  }finally{globalThis.fetch=original;}
 });
