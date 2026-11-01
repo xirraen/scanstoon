@@ -87,7 +87,7 @@ test('Chat button and Main Mini App use same mobile shell and Telegram-synced th
   assert.equal(item.document.documentElement.dataset.theme,'light');
   assert.equal(JSON.parse(item.appStorage.get('scanstoon_preferences')).theme,'light');
   assert.ok(item.changed.includes('#e8eaf1'));
-  assert.match(item.nodes.get('content').innerHTML,/Setiap panel/);
+  assert.match(item.nodes.get('content').innerHTML,/Katalog belum tersedia/);
   assert.match(item.nodes.get('bottomnav').innerHTML,/Akun/);
   assert.doesNotMatch(item.nodes.get('content').innerHTML,/Menyiapkan dunia ceritamu/);
  }
