@@ -78,7 +78,7 @@ async function telegramBotMethod(env,method,payload){
 }
 async function passportInvoice(env,user){
  // Reuse uncharged invoices instead of generating multiple payable order IDs.
- await env.DB.prepare("DELETE FROM passport_orders WHERE user_id=? AND status='pending' AND created_at < datetime('now','-30 minutes')").bind(user.id).run();
+ await env.DB.prepare("DELETE FROM passport_orders WHERE user_id=? AND status='pending' AND checkout_at IS NULL AND created_at < datetime('now','-30 minutes')").bind(user.id).run();
  let order=await env.DB.prepare("SELECT id,checkout_at,stars_amount FROM passport_orders WHERE user_id=? AND status='pending' LIMIT 1").bind(user.id).first();
  if(order?.checkout_at)return {processing:true};
  const price=order?order.stars_amount:passportPrice(env);
