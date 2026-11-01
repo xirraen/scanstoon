@@ -330,6 +330,18 @@ html[data-runtime="telegram"] body.profile-active .profile-screen{padding-top:14
 @media(prefers-reduced-motion:reduce){.entry-loading .entry-loading-pulse{animation:none}}
 .entry-error-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
 
+
+/* Startup v0.9: home and navigation render while catalogue loads. */
+.entry-home{padding:8px 0 22px}
+.entry-home .entry-headline{font-size:clamp(27px,7vw,42px);font-weight:900;letter-spacing:-.045em;line-height:1.12;margin:12px 0 8px}
+.entry-home .entry-message{color:var(--muted);max-width:420px;font-size:12px;line-height:1.7}
+.entry-home .entry-actions{display:flex;gap:9px;margin:19px 0 24px;flex-wrap:wrap}
+.entry-home .entry-card{padding:18px;border:1px solid var(--stroke);background:var(--panel);border-radius:18px;display:grid;gap:10px}
+.entry-home .entry-card strong{font-size:15px}
+.entry-home .entry-card small{color:var(--muted)}
+.entry-status{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin:0 0 14px;border:1px solid var(--stroke);border-radius:12px;background:var(--panel2);font-size:11px;line-height:1.5}
+.entry-status button{border-radius:9px;background:transparent;border:1px solid var(--stroke);color:var(--text);padding:6px 9px;flex-shrink:0;font-size:11px}
+@media(max-width:450px){.entry-home .entry-actions .btn{font-size:11px}.entry-status{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -358,7 +370,11 @@ var saved=readStore('scanstoon_saved',[]);
 var history=readStore('scanstoon_history',[]);
 var preferences=readStore('scanstoon_preferences',{});
 var checkins=readStore('scanstoon_checkins',[]);
-var S={comics:[],home:null,details:{},saved:Array.isArray(saved)?saved:[],history:Array.isArray(history)?history:[],auth:!!initData,loading:true,error:'',filter:'all',sort:'popular',query:'',genre:'',status:'all',view:preferences.view==='list'?'list':'grid',theme:['light','dark','system'].includes(preferences.theme)?preferences.theme:'dark',checkins:Array.isArray(checkins)?checkins.filter(function(k){return /^\d{8}$/.test(k);}).slice(0,45):[]};
+var catalogCache=readStore('scanstoon_public_catalog_v1',null);
+var cachedComics=catalogCache&&Array.isArray(catalogCache.items)&&catalogCache.items.length<=48&&
+ Number.isFinite(catalogCache.savedAt)&&catalogCache.savedAt>Date.now()-7*86400000?
+ catalogCache.items.filter(function(c){return c&&typeof c.slug==='string'&&typeof c.title==='string';}):[];
+var S={comics:cachedComics,home:cachedComics.length?{popular:cachedComics.slice(0,8),latest:cachedComics.slice(0,8)}:null,details:{},saved:Array.isArray(saved)?saved:[],history:Array.isArray(history)?history:[],auth:!!initData,loading:false,networkLoading:true,error:'',filter:'all',sort:'popular',query:'',genre:'',status:'all',view:preferences.view==='list'?'list':'grid',theme:['light','dark','system'].includes(preferences.theme)?preferences.theme:'dark',checkins:Array.isArray(checkins)?checkins.filter(function(k){return /^\d{8}$/.test(k);}).slice(0,45):[]};
 function currentTheme(){return S.theme==='system'?((inTelegram&&tg&&['light','dark'].includes(tg.colorScheme))?tg.colorScheme:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')):S.theme;}
 function applyTheme(){
 var theme=currentTheme();
@@ -425,7 +441,7 @@ function homeContinue(){
 var last=S.history[0],comic=last&&S.comics.find(function(c){return c.slug===last.slug;});
 return '<div class="quick-row">'+(comic?'<button class="quick-card" data-go="read/'+safe(comic.slug)+'/'+Number(last.chapter_number||1)+'"><span><small>LANJUTKAN MEMBACA</small><b>'+safe(comic.title)+'</b></span><span class="quick-icon">↗</span></button>':'<button class="quick-card" data-go="library"><span><small>PUSTAKA PRIBADI</small><b>Simpan cerita favoritmu</b></span><span class="quick-icon">↗</span></button>')+'<button class="quick-card" data-go="activity"><span><small>RITUAL BACA HARIAN</small><b>Catat aktivitasmu</b></span><span class="quick-icon">✦</span></button></div>';
 }
-function home(){var first=S.comics[0];if(!first)return empty('Katalog belum tersedia','Silakan periksa koneksi dan coba lagi.');
+function home(){var first=S.comics[0];if(!first)return '<section class="entry-home"><div class="eyebrow">SCANSTOON / COMIC UNIVERSE</div><h1 class="entry-headline">Setiap panel,<br><span class="gradient-text">dunia baru.</span></h1><p class="entry-message">Baca manga, manhwa, manhua, webtoon, dan cerita orisinal. Susun koleksi serta lanjutkan progres bacamu.</p><div class="entry-actions"><button class="btn btn-primary" data-go="explore">Jelajahi katalog '+icon('arrow')+'</button><button class="btn btn-secondary" data-go="library">Pustaka saya</button></div><div class="entry-card"><strong>Katalog belum tersedia</strong><small>'+(S.networkLoading?'Menghubungkan ke katalog Scanstoon…':S.error?'Koneksi terputus. Coba lagi melalui tombol di bawah.':'Belum ada cerita yang dapat ditampilkan.')+'</small>'+(S.networkLoading?'':'<button class="btn btn-secondary" data-retry-load="1">Coba lagi</button>')+'</div></section>';
 var pop=(S.home&&S.home.popular)||S.comics;
 return '<div class="home-welcome"><div><span class="welcome-kicker">SCANSTOON / YOUR DAILY ESCAPE</span><h2 class="welcome-heading">Halo, siap menjelajah <span>cerita?</span></h2></div><button class="welcome-search" data-go="explore" aria-label="Cari cerita">'+icon('explore')+'<span>Cari cerita</span></button></div>'+'<section class="hero"><div class="hero-copy"><div class="eyebrow">✦ YOUR NEXT UNIVERSE</div><h1>Setiap panel,<br><span class="gradient-text">dunia baru.</span></h1><p>Temukan cerita orisinal, susun daftar bacaan, dan lanjutkan petualanganmu dari mana saja.</p><div class="hero-actions"><button class="btn btn-primary" data-go="explore">Jelajahi cerita '+icon('arrow')+'</button><button class="btn btn-secondary" data-go="detail/'+safe(first.slug)+'">Pilihan editor '+icon('play')+'</button></div></div><div class="hero-poster">'+art(first,'large')+'</div><div class="hero-float">★ EDITOR\'S PICK</div></section>'
 +homeContinue()+'<section><div class="section-header"><div><div class="eyebrow">EXPLORE GENRES</div><h2 class="section-title">Apa yang ingin kamu baca?</h2></div></div>'+chips()+'</section>'
@@ -554,7 +570,7 @@ if(p[0]==='read'&&S.auth&&p[1]){
    call('/api/storage/comics/'+encodeURIComponent(p[1])+'/chapters/'+chapter+'/pages').then(function(pages){S.telegramPages[key]=pages;if(path()[0]==='read'&&path()[1]===p[1])render();}).catch(function(e){toast('Halaman Telegram belum tersedia; menampilkan preview.');});
  }
 }
-if(S.error&&S.comics.length===0)el.innerHTML='<div class="notice" role="alert">'+safe(S.error)+'<div class="entry-error-actions"><button class="btn btn-outline" data-retry-load="1">Coba lagi</button></div></div>'+out;}
+if(S.error)el.innerHTML='<div class="entry-status" role="status"><span>'+safe(S.error)+'</span><button data-retry-load="1">Coba lagi</button></div>'+out;}
 async function bookmarks(){
   if(!S.auth||!cloud)return;
   try{var keys=await tgKeys();S.saved=keys.filter(function(k){return k.indexOf('scs_b_')===0;}).map(function(k){return k.slice(6);});render();}
