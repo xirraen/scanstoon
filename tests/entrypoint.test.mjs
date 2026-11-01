@@ -9,7 +9,7 @@ const runtime=async(route)=>{
  return {response:r,html:await r.text()};
 };
 
-test('All entry URLs deliver same v0.8 app, no stale HTML or accidental alternate layout',async()=>{
+test('All entry URLs deliver same v0.9 app, no stale HTML or accidental alternate layout',async()=>{
  const routes=['/','/?startapp=main','/?tgWebAppStartParam=home','/app','/index.html'];
  const views=await Promise.all(routes.map(runtime));
  const expected=views[0].html;
@@ -18,11 +18,13 @@ test('All entry URLs deliver same v0.8 app, no stale HTML or accidental alternat
   assert.equal(response.status,200,routes[i]);
   assert.equal(html,expected,'different HTML for '+routes[i]);
   assert.match(response.headers.get('cache-control'),/no-store/);
-  assert.equal(response.headers.get('x-scanstoon-release'),'0.8.0');
+  assert.equal(response.headers.get('x-scanstoon-release'),'0.9.0');
  }
  assert.match(expected,/html\[data-runtime="telegram"\] \.topbar\{display:none!important\}/);
  assert.match(expected,/scs_pref_theme/);
  assert.match(expected,/loadInitialData/);
+ assert.match(expected,/scanstoon_public_catalog_v1/);
+ assert.doesNotMatch(expected,/Promise\.allSettled\(\[call\('\/api\/comics/);
  assert.match(expected,/data-retry-load/);
  const js=expected.match(/<script>([\s\S]*?)<\/script>/)?.[1];
  assert.ok(js);
