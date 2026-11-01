@@ -82,7 +82,7 @@ async function telegramBootstrap(env) {
     await db.prepare("INSERT INTO telegram_setup_status(id,status,webhook_url,bot_username,channel_status,error_code,updated_at) VALUES(1,?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(id) DO UPDATE SET status=excluded.status,webhook_url=excluded.webhook_url,bot_username=excluded.bot_username,channel_status=excluded.channel_status,error_code=excluded.error_code,updated_at=CURRENT_TIMESTAMP").bind(status,webhookUrl||'',username||'',channelStatus||'',errorCode||'').run();
   }
   const previous=await db.prepare("SELECT status FROM telegram_setup_status WHERE id=1").first();
-  if(previous?.status==='ok') return;
+  // Reconcile allowed_updates on bootstrap even when the previous webhook was healthy.
   const token=env.TELEGRAM_BOT_TOKEN||env.TELEGRAM_TOKEN_BOT;
   const hookSecret=env.TELEGRAM_WEBHOOK_SECRET;
   if(!token||!hookSecret){await record('blocked','','','','MISSING_TOKEN_OR_SECRET');return;}
@@ -107,10 +107,13 @@ async function telegramBootstrap(env) {
     if(!previousWebhook){await record('error','',username,channelStatus,'WEBHOOK_INFO_FAILED');return;}
     const current=String(previousWebhook.url||'');
     if(current&&current!==target){await record('blocked',current,username,channelStatus,'EXISTING_WEBHOOK_OTHER_URL');return;}
-    const applied=await call('setWebhook',{url:target,secret_token:hookSecret,allowed_updates:['message','channel_post'],drop_pending_updates:false});
+    const required=['message','channel_post','pre_checkout_query'];
+    const updates=Array.isArray(previousWebhook.allowed_updates)?previousWebhook.allowed_updates:[];
+    const alreadyCorrect=current===target&&required.every(kind=>updates.includes(kind));
+    const applied=alreadyCorrect?true:await call('setWebhook',{url:target,secret_token:hookSecret,allowed_updates:required,drop_pending_updates:false});
     if(applied!==true){await record('error',current,username,channelStatus,'SET_WEBHOOK_FAILED');return;}
     const confirmed=await call('getWebhookInfo');
-    if(!confirmed||confirmed.url!==target){await record('error',current,username,channelStatus,'WEBHOOK_VERIFICATION_FAILED');return;}
+    if(!confirmed||confirmed.url!==target||!required.every(kind=>(confirmed.allowed_updates||[]).includes(kind))){await record('error',current,username,channelStatus,'WEBHOOK_VERIFICATION_FAILED');return;}
     await record('ok',target,username,channelStatus,'');
   }catch(err){
     // No exception details: Telegram's internal fetch URL contains a bot token.
