@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHmac} from 'node:crypto';
 import worker from '../dist/worker.js';
+import {readFileSync} from 'node:fs';
 
 const endpoint='https://scanstoon.example';
 function signInit(token,userId){
@@ -233,4 +234,19 @@ test('Pre-checkout rejects all orders when sales are paused, even if invoice exi
   assert.equal(answer.at(-1).payload.ok,false);
   assert.equal(db.state.entitlements.size,0);
  }finally{globalThis.fetch=oldFetch;}
+});
+
+test('Payment webhook bootstrap and D1 migration cover Stars lifecycle',async()=>{
+ const bootstrap=readFileSync(new URL('../src/telegram-storage.js',import.meta.url),'utf8');
+ const workerSource=readFileSync(new URL('../src/worker.js',import.meta.url),'utf8');
+ const migration=readFileSync(new URL('../migrations/0005_passport_operations.sql',import.meta.url),'utf8');
+ assert.match(bootstrap,/\['message','channel_post','pre_checkout_query'\]/);
+ assert.match(bootstrap,/getWebhookInfo/);
+ assert.match(bootstrap,/required\.every/);
+ assert.match(workerSource,/refunded_payment/);
+ assert.match(workerSource,/checkout_at IS NULL AND created_at/);
+ assert.match(workerSource,/PASSPORT_SUPPORT_CHAT_ID/);
+ assert.match(migration,/CREATE TABLE IF NOT EXISTS passport_refunds/);
+ assert.match(migration,/CREATE TABLE IF NOT EXISTS passport_support_tickets/);
+ assert.match(migration,/idx_passport_one_pending/);
 });
