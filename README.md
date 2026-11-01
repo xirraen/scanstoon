@@ -111,6 +111,14 @@ Video pengguna tanggal 1 November 2026 menunjukkan loading *“Menyiapkan dunia 
 
 Loading 4-kotak sebelum HTML dirender merupakan loading *native Telegram*; warna, logo, dan URL Main Mini App dikelola di BotFather. JavaScript web tidak dapat menyamakan seluruh kontrol native kedua jalur masuk.
 
+## Scanstoon v0.9.1 — konsistensi mode peluncuran Telegram
+
+Video pengguna menunjukkan tombol chat dan profil bot memicu dua jenis WebView native. Sumber masalah: tombol inline sebelumnya menggunakan `InlineKeyboardButton.web_app.url` (membuka inline Mini App / `requestWebView`), sedangkan **Buka Aplikasi** di profil memanggil Main Mini App (`requestMainWebView`).
+
+Kini bot `/start`, `/app`, dan `/help` mengirim tombol **URL** ke `https://t.me/ScanstoonBot?startapp` (format Main Mini App resmi Telegram). Dengan begitu kedua tombol baru membuka Main Mini App yang sama. URL origin web produksi tetap `https://scanstoon.ikomik-core.workers.dev/`.
+
+**Catatan:** pesan bot lama dengan tombol `web_app` tidak diperbarui secara otomatis. Buka chat `@ScanstoonBot` dan kirim `/start` lagi untuk mendapatkan tombol baru. Konfigurasi URL Main Mini App tetap berada di BotFather, tidak dapat diubah melalui Bot API. Kontrol / logo loading native Telegram berbeda antar versi klien, tetapi konten aplikasi dari backend adalah satu.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
