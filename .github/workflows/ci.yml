@@ -3,6 +3,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Run manually *after* Cloudflare deployment to assert the deployed version.
+  workflow_dispatch:
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -29,7 +31,9 @@ jobs:
 
           base = 'https://scanstoon.ikomik-core.workers.dev'
           expected_release = json.loads(Path('package.json').read_text())['version']
-          check_release = os.environ.get('GITHUB_REF') == 'refs/heads/main'
+          # A push to main happens before the manual C5 upload. Do not compare
+          # live release versions on that push; run workflow_dispatch after deploy.
+          check_release = os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch'
           for path in ['/api/health', '/api/telegram/status', '/api/comics?limit=48', '/api/home']:
               try:
                   req = Request(base + path, headers={'User-Agent':'Scanstoon-CI/1.0', 'Accept':'application/json'})
