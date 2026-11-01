@@ -2,8 +2,8 @@
 // Single canonical origin shared by the chat button and Telegram bot menu.
 // BotFather's Main Mini App URL must be set to this same origin separately.
 const SCANSTOON_APP_URL='https://scanstoon.ikomik-core.workers.dev/';
-const SCANSTOON_RELEASE='0.9.1';
-const SCANSTOON_MAIN_APP_LINK='https://t.me/ScanstoonBot?startapp';
+const SCANSTOON_RELEASE='0.10.0';
+const SCANSTOON_MAIN_APP_LINK='https://t.me/ScanstoonBot?startapp&mode=fullscreen';
 const json = (data, status = 200, cache = false) => new Response(JSON.stringify(data), {status, headers: {'Content-Type':'application/json; charset=utf-8','Cache-Control':cache?'public, max-age=60':'no-store','X-Content-Type-Options':'nosniff'}});
 const good = (data, meta) => json({success:true,data,...(meta?{meta}:{})});
 const fail = (status, code, message) => json({success:false,error:{code,message}},status);
