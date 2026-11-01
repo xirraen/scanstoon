@@ -18,7 +18,7 @@ Rancangan aplikasi mobile dibuat secara independen dengan mengambil **pola inter
 - Tab **Beranda**, **Katalog**, **Pustaka**, **Aktivitas**, dan **Akun** yang dioptimalkan untuk Telegram Mini App.
 - Filter katalog berdasarkan format, genre, status serial, pengurutan, serta opsi tampilan grid/daftar.
 - Beranda dengan pintasan **lanjut baca** dari progres tersimpan dan akses aktivitas harian.
-- Check-in membaca harian serta tampilan 7 hari dan streak. Check-in tidak menghasilkan uang, poin, atau hadiah finansial.
+- Check-in membaca harian serta tampilan 7 hari dan streak. Check-in tidak menghasilkan uang atau hadiah finansial. Sejak v0.6, check-in menghasilkan poin aktivitas internal yang tidak bisa dicairkan.
 - Check-in disinkronkan lewat **Telegram CloudStorage** jika tersedia, dan tersimpan di localStorage saat dibuka lewat browser.
 - Tema terang/gelap, progres scroll reader, dan ekspor cadangan JSON berisi bookmark serta progres. Ekspor belum mendukung impor otomatis.
 - Ilustrasi seed tetap placeholder orisinal; tidak disertakan media berhak cipta dari aplikasi referensi.
