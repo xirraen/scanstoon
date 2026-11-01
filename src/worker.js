@@ -1,4 +1,8 @@
 // Scanstoon MVP Cloudflare Worker. PAGE is generated from public/index.html by scripts/build.mjs.
+// Single canonical origin shared by the chat button and Telegram bot menu.
+// BotFather's Main Mini App URL must be set to this same origin separately.
+const SCANSTOON_APP_URL='https://scanstoon.ikomik-core.workers.dev/';
+const SCANSTOON_RELEASE='0.8.0';
 const json = (data, status = 200, cache = false) => new Response(JSON.stringify(data), {status, headers: {'Content-Type':'application/json; charset=utf-8','Cache-Control':cache?'public, max-age=60':'no-store','X-Content-Type-Options':'nosniff'}});
 const good = (data, meta) => json({success:true,data,...(meta?{meta}:{})});
 const fail = (status, code, message) => json({success:false,error:{code,message}},status);
@@ -184,7 +188,7 @@ async function passportSupportCommand(env,message,command){
  return {received:true,submitted:true};
 }
 async function api(request,env,url) {
-  if (url.pathname==='/api/health') return good({status:'ok',version:'0.7.0',service:'scanstoon'});
+  if (url.pathname==='/api/health') return good({status:'ok',version:SCANSTOON_RELEASE,service:'scanstoon'});
   if (!env.DB) return fail(503,'DATABASE_UNAVAILABLE','Database belum dikonfigurasi.');
   const method=request.method;
   if (method==='GET' && url.pathname==='/api/telegram/status') {
@@ -313,7 +317,7 @@ async function telegramWebhook(request,env) {
     return good(await passportSupportCommand(env,update.message,command));
   }
   if(chat && ['/start','/app','/help'].includes(command)) {
-    const base=env.APP_URL||new URL(request.url).origin;
+    const base=SCANSTOON_APP_URL;
     const payload={chat_id:chat,text:'Scanstoon — katalog komik orisinal, daftar bacaan, dan pelacak progres. Buka aplikasinya melalui tombol berikut.',reply_markup:{inline_keyboard:[[{text:'Buka Scanstoon',web_app:{url:base}}]]}};
     await fetch('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   }
@@ -329,7 +333,9 @@ export default {
       if(request.method!=='GET'&&request.method!=='HEAD') return fail(405,'METHOD_NOT_ALLOWED','Method tidak valid.');
       return new Response(request.method==='HEAD'?null:PAGE,{status:200,headers:{
         'Content-Type':'text/html; charset=utf-8',
-        'Cache-Control':'public, max-age=60',
+        'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma':'no-cache',
+        'X-Scanstoon-Release':SCANSTOON_RELEASE,
         'X-Content-Type-Options':'nosniff',
         'Referrer-Policy':'strict-origin-when-cross-origin',
         'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
