@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#090d1b">
 <meta name="description" content="Scanstoon — jelajahi katalog komik orisinal dan simpan perjalanan bacamu.">
 <title>Scanstoon — Discover Your Next Story</title>
-<script src="https://telegram.org/js/telegram-web-app.js?64"></script>
+
 <style>
 :root{color-scheme:dark;--bg:#080b16;--panel:#111627;--panel2:#161c30;--stroke:#252d43;--muted:#8992ab;--text:#f5f7ff;--cyan:#62e6ed;--pink:#fa67b6;--purple:#977af7;--radius:20px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--text);background:radial-gradient(ellipse 60% 30% at 80% -8%,#162249 0,transparent 100%),var(--bg);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-width:315px}button,input,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}button:disabled{opacity:.5;cursor:not-allowed}::selection{background:#1e566a;color:#fff}
@@ -342,6 +342,9 @@ html[data-runtime="telegram"] body.profile-active .profile-screen{padding-top:14
 .entry-status{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin:0 0 14px;border:1px solid var(--stroke);border-radius:12px;background:var(--panel2);font-size:11px;line-height:1.5}
 .entry-status button{border-radius:9px;background:transparent;border:1px solid var(--stroke);color:var(--text);padding:6px 9px;flex-shrink:0;font-size:11px}
 @media(max-width:450px){.entry-home .entry-actions .btn{font-size:11px}.entry-status{align-items:flex-start}}
+
+/* Paint consistent mobile shell before Telegram SDK completes download. */
+@media(max-width:650px){body .topbar{display:none!important}body .content{padding-top:max(18px,env(safe-area-inset-top,0px))}}
 </style>
 </head>
 <body>
@@ -349,8 +352,9 @@ html[data-runtime="telegram"] body.profile-active .profile-screen{padding-top:14
 <button class="brand" data-go="home" aria-label="Scanstoon beranda"><span class="brand-mark"><span>S</span></span><span class="brand-copy"><b>SCANSTOON</b><small>COMIC UNIVERSE</small></span></button>
 <div class="header-right"><span class="top-label">TELEGRAM MINI APP</span><button class="icon-btn" data-go="explore" aria-label="Cari komik"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg></button><button class="avatar" data-go="profile" aria-label="Profil" id="avatar-letter">S</button></div>
 </header>
-<div class="frame"><aside class="sidebar"><div class="sidebar-title">MENU UTAMA</div><div id="sidenav"></div><div class="sidebar-footer"><b>SCANSTOON / BETA</b>Discover • Save • Continue<br>Original stories only</div></aside><main class="content" id="content" aria-live="polite"><div class="muted">Memuat katalog…</div></main></div>
-<nav class="bottomnav" id="bottomnav" aria-label="Navigasi utama"></nav><div id="reader-progress" aria-hidden="true"></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="frame"><aside class="sidebar"><div class="sidebar-title">MENU UTAMA</div><div id="sidenav"></div><div class="sidebar-footer"><b>SCANSTOON / BETA</b>Discover • Save • Continue<br>Original stories only</div></aside><main class="content" id="content" aria-live="polite"><section class="entry-home"><div class="eyebrow">SCANSTOON / COMIC UNIVERSE</div><h1 class="entry-headline">Setiap panel,<br><span class="gradient-text">dunia baru.</span></h1><p class="entry-message">Jelajahi manga, manhwa, manhua, webtoon, dan cerita orisinal dalam satu tempat.</p><div class="entry-card"><strong>Katalog belum tersedia</strong><small>Menghubungkan ke katalog Scanstoon…</small></div></section></main></div>
+<nav class="bottomnav" id="bottomnav" aria-label="Navigasi utama"><button class="bottom-link active" data-go="home" aria-label="Beranda">Beranda</button><button class="bottom-link" data-go="explore" aria-label="Katalog">Katalog</button><button class="bottom-link" data-go="library" aria-label="Pustaka">Pustaka</button><button class="bottom-link" data-go="activity" aria-label="Aktivitas">Aktivitas</button><button class="bottom-link" data-go="profile" aria-label="Akun">Akun</button></nav><div id="reader-progress" aria-hidden="true"></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://telegram.org/js/telegram-web-app.js?64"></script>
 <script>
 (function(){
 'use strict';
