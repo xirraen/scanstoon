@@ -344,6 +344,7 @@ export default {
     }catch(error){console.error('scanstoon_request_error',String(error));return fail(500,'SERVER_ERROR','Terjadi masalah pada server.');}
   },
   async scheduled(event,env,ctx){
-    ctx.waitUntil(Promise.all([telegramBootstrap(env),telegramMenuBootstrap(env)]));
+    // Reconcile webhook first; only publish the menu when its destination is verified.
+    ctx.waitUntil((async()=>{await telegramBootstrap(env);await telegramMenuBootstrap(env);})());
   }
 };
