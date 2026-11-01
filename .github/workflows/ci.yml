@@ -43,5 +43,15 @@ jobs:
               if path == '/api/telegram/status':
                   assert body['data']['webhook'] == 'ok'
                   assert body['data']['channel'] == 'admin'
+          # Regression: bot-chat and Main Mini App must serve one uncached UI.
+          with urlopen(Request(base + '/', headers={'User-Agent':'Scanstoon-CI/1.0','Accept':'text/html'}), timeout=20) as page:
+              assert page.status == 200
+              assert 'no-store' in (page.headers.get('Cache-Control') or '')
+              release = page.headers.get('X-Scanstoon-Release')
+              assert release and release != '0.7.0', release
+              html = page.read().decode('utf-8')
+              assert 'data-runtime="telegram"' in html
+              assert 'scs_pref_theme' in html
+          print('Unified Scanstoon UI smoke test passed, release', release)
           print('Cloudflare C5 smoke tests passed')
           PY
