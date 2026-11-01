@@ -22,11 +22,15 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          import os
+          from pathlib import Path
           from urllib.request import urlopen, Request
           from urllib.error import HTTPError
 
           base = 'https://scanstoon.ikomik-core.workers.dev'
-          for path in ['/api/health', '/api/telegram/status', '/api/comics?limit=1']:
+          expected_release = json.loads(Path('package.json').read_text())['version']
+          check_release = os.environ.get('GITHUB_REF') == 'refs/heads/main'
+          for path in ['/api/health', '/api/telegram/status', '/api/comics?limit=48', '/api/home']:
               try:
                   req = Request(base + path, headers={'User-Agent':'Scanstoon-CI/1.0', 'Accept':'application/json'})
                   with urlopen(req, timeout=20) as response:
@@ -40,6 +44,14 @@ jobs:
               assert body.get('success') is True, (path, body)
               if path == '/api/health':
                   assert body['data']['status'] == 'ok'
+                  if check_release:
+                      assert body['data']['version'] == expected_release, (body['data']['version'], expected_release)
+              if path == '/api/comics?limit=48':
+                  assert isinstance(body['data'], list) and len(body['data']) > 0, (path, body)
+                  assert all(isinstance(c.get('slug'), str) for c in body['data'])
+                  print('Startup catalog available, titles:', len(body['data']))
+              if path == '/api/home':
+                  assert isinstance(body['data'].get('popular'), list)
               if path == '/api/telegram/status':
                   assert body['data']['webhook'] == 'ok'
                   assert body['data']['channel'] == 'admin'
@@ -49,9 +61,14 @@ jobs:
               assert 'no-store' in (page.headers.get('Cache-Control') or '')
               release = page.headers.get('X-Scanstoon-Release')
               assert release and release != '0.7.0', release
+              if check_release:
+                  assert release == expected_release, (release, expected_release)
               html = page.read().decode('utf-8')
               assert 'data-runtime="telegram"' in html
               assert 'scs_pref_theme' in html
+              if check_release:
+                  assert 'scanstoon_public_catalog_v1' in html
+                  assert 'Katalog belum tersedia' in html
           print('Unified Scanstoon UI smoke test passed, release', release)
           print('Cloudflare C5 smoke tests passed')
           PY
