@@ -69,6 +69,21 @@ Penyempurnaan dari Profile Sheet v0.4:
 - Bot menerima `/terms` serta `/paysupport`; kanal operator untuk sengketa melalui [GitHub Issues](https://github.com/xirraen/scanstoon/issues). Pemilik harus merespons sengketa dan refund.
 - Tidak ada metode pembayaran blockchain di UI; wallet TON dapat ditambahkan untuk fitur blockchain terpisah dengan TON Connect, namun **bukan** untuk Premium digital Telegram.
 
+## Scanstoon v0.7 — kesiapan operasional Paspor .toon
+
+Penjualan **tetap nonaktif** secara default, dan baru bisa dipakai setelah operator menetapkan **ketiga** variabel Cloudflare berikut: `PASSPORT_SALES_ENABLED=true`, `PASSPORT_STARS_PRICE=<integer 1–10000>`, dan `PASSPORT_SUPPORT_CHAT_ID=<Telegram chat ID numerik admin/support>`. Harga 250 Stars pada UI bila belum diatur hanya **indikatif**, bukan konversi US$5.
+
+- Nomor Paspor publik dihasilkan dari **HMAC** dengan server-side secret; tidak mengungkap ID Telegram pengguna.
+- Hanya satu invoice aktif per user; checkout terjaga dari balapan persetujuan ganda. `pre_checkout_query` **ditolak** jika penjualan dihentikan.
+- Pembayaran `successful_payment` dan `refunded_payment` diproses dengan idempotensi dan rekonsiliasi berbasis `telegram_payment_charge_id`; refund mencabut akses jika tidak ada pembayaran lain yang valid. Stars dipakai = pembayaran belum di-refund.
+- Tiket dukungan **privat** via Telegram `/paysupport` lalu `/ticket PS-XXXXXXXXXXXX keluhan`; operator menerima pemberitahuan jika chat dukungan dikonfigurasi. Tidak perlu mempublikasikan data pembayaran ke GitHub Issues.
+- Bot webhook harus menerima `message`, `channel_post`, dan **`pre_checkout_query`**. Bootstrap Worker dapat merekonsiliasi `allowed_updates` saat dijalankan lewat temporary Cron Trigger.
+- Migrasi `migrations/0005_passport_operations.sql` **wajib dijalankan sebelum deploy** kode v0.7. Kode yang dijalankan tanpa migrasi ini dapat mengembalikan HTTP 500 untuk fitur Paspor.
+- Tampilan Profil pada layar mobile menyembunyikan header situs duplikat supaya tidak bertabrakan dengan chrome native Telegram. Panel menampilkan tautan bantuan privat.
+- **Tidak mengaktifkan pembayaran TON** untuk Premium digital dalam Telegram Mini App. Refund dilakukan melalui `refundStarPayment` menggunakan receipt yang sah; proses admin memerlukan verifikasi identitas transaksi terlebih dahulu.
+
+Detail kesiapan produksi, migrasi, prosedur support, dan panduan refund di [docs/payments-ops.md](docs/payments-ops.md).
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
