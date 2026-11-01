@@ -84,6 +84,20 @@ Penjualan **tetap nonaktif** secara default, dan baru bisa dipakai setelah opera
 
 Detail kesiapan produksi, migrasi, prosedur support, dan panduan refund di [docs/payments-ops.md](docs/payments-ops.md).
 
+## Scanstoon v0.8 — satu tampilan untuk seluruh jalur masuk Telegram
+
+Perbaikan regresi berdasarkan video pengguna yang menunjukkan dua rute masuk: tombol **Buka Scanstoon** pada chat bot dan **Buka Aplikasi** pada profil bot.
+
+- Tombol chat bot dan menu bot memakai **URL kanonis** `https://scanstoon.ikomik-core.workers.dev/`. Bootstrap menu tidak lagi melewatkan pemeriksaan jika status sebelumnya `ok`; menu lama diperbarui bila masih menunjuk ke URL berbeda.
+- HTML utama memakai `Cache-Control: no-store` dan header `X-Scanstoon-Release: 0.8.0`, agar WebView tidak mempertahankan versi tampilan lama. Semua rute frontend menerima build HTML yang identik.
+- Pada **Telegram mobile**, header web tambahan dihilangkan pada **seluruh halaman**, bukan hanya halaman Profil. Navigasi bawah dan padding safe-area tetap dipertahankan.
+- Tema default dipatok dark seperti desain Scanstoon. Preferensi pengguna (`dark`, `light`, `system`) disinkronkan ke Telegram CloudStorage (`scs_pref_theme`, `scs_pref_view`) untuk konsistensi antar-jalur masuk. Saat memilih tema Sistem, WebApp menggunakan `Telegram.WebApp.colorScheme` bila tersedia.
+- Saat katalog lambat lebih dari 8 detik, tampil pesan status dan tombol **Coba lagi**; data yang akhirnya masuk tetap diproses. Loading dan navigasi stabil.
+- Urutan bootstrap terjamin: webhook Telegram diverifikasi terlebih dahulu, baru URL menu bot direkonsiliasi, sehingga menu tidak dipublikasikan ketika webhook diblokir.
+- Pengujian `tests/entrypoint.test.mjs` membandingkan hasil jalur Main Mini App dan tombol chat, sinkronisasi tema, header cache dan URL tombol `/start`.
+
+**Penting:** Tombol **Buka Aplikasi** pada profil bot berasal dari **Main Mini App URL di @BotFather**, bukan dari Bot API. Operator harus memastikan BotFather > `/myapps` / pengaturan Main Mini App untuk `@ScanstoonBot` memiliki URL `https://scanstoon.ikomik-core.workers.dev/` (tanpa tautan lama). Perubahan otomatis melalui `setChatMenuButton` hanya mengatur **default menu bot**, bukan URL Main Mini App BotFather atau override menu per-chat. Kontrol sistem Telegram (X, panah, sheet) tidak dapat dihilangkan oleh aplikasi.
+
 ## Stack
 Cloudflare Workers + D1, HTML/CSS/JavaScript tanpa runtime dependency. MVP sengaja dibuat single Worker untuk memudahkan deploy langsung di C5. Rencana React/TypeScript dari whitepaper menjadi tahap refaktor berikutnya.
 
