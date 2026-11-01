@@ -438,8 +438,8 @@ function updateImmersiveLayout(){
  var full=!!tg.isFullscreen;
  document.documentElement.dataset.fullscreen=full?'on':'off';
  var area=tg.safeAreaInset||{},content=tg.contentSafeAreaInset||{};
- var top=Math.max(0,Math.min(140,Number(area.top)||0,Number(content.top)||0));
- var bottom=Math.max(0,Math.min(100,Number(area.bottom)||0,Number(content.bottom)||0));
+ var top=Math.min(140,Math.max(0,Number(area.top)||0,Number(content.top)||0));
+ var bottom=Math.min(100,Math.max(0,Number(area.bottom)||0,Number(content.bottom)||0));
  if(document.documentElement.style&&typeof document.documentElement.style.setProperty==='function'){
   document.documentElement.style.setProperty('--scs-safe-top',top+'px');
   document.documentElement.style.setProperty('--scs-safe-bottom',bottom+'px');
