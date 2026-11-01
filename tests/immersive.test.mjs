@@ -23,7 +23,7 @@ async function launch(mode){
   };
   const doc={documentElement:{dataset:{},style:{setProperty(k,v){variables[k]=v}}},body:{classList:{toggle(){}}},
     getElementById(id){return nodes.get(id)||null},
-    addEventListener(type,cb){listeners[type]=cb}
+    addEventListener(type,cb){(listeners[type]||(listeners[type]=[])).push(cb)}
   };
   const fetch=async(url)=>({ok:true,json:async()=>({success:true,data:String(url).startsWith('/api/comics')?[]:{premium:false,stars_spent:0,sales_enabled:false,price_stars:250}})});
   const localStorage={getItem(){return null},setItem(){}};
@@ -67,7 +67,7 @@ test('Unsupported Telegram fullscreen does not break controls or startup',async(
   assert.ok(env.calls.includes('ready'));
   assert.ok(!env.calls.includes('requestFullscreen'));
   const target={dataset:{immersive:'1'}};
-  env.listeners.click({target:{closest(){return target}}});
+  for(const listener of env.listeners.click)listener({target:{closest(){return target}}});
   assert.match(env.nodes.get('toast').textContent,/tidak didukung/);
   assert.match(env.nodes.get('bottomnav').innerHTML,/Beranda/);
 });
