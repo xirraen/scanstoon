@@ -137,7 +137,7 @@ async function telegramMenuBootstrap(env){
   const token=env.TELEGRAM_BOT_TOKEN||env.TELEGRAM_TOKEN_BOT;
   if(!token){await record('blocked','','BOT_TOKEN_MISSING');return;}
   const target=SCANSTOON_APP_URL;
-  const sameTarget=(value)=>{try{const u=new URL(value);return u.origin===target&&u.pathname==='/'&&!u.search&&!u.hash;}catch{return false;}};
+  const sameTarget=(value)=>{try{const u=new URL(value);return u.origin===new URL(target).origin&&u.pathname==='/'&&!u.search&&!u.hash;}catch{return false;}};
   const api='https://api.telegram.org/bot'+token+'/';
   try{
     const call=async(method,body)=>{
