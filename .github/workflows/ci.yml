@@ -20,7 +20,10 @@ jobs:
       - name: API security smoke tests
         run: node --test tests/*.test.mjs
 
+      # Production is tested only by the explicit post-deploy dispatch.
+      # Pull requests and pushes must remain fully offline and deterministic.
       - name: Live Cloudflare C5 endpoint smoke test
+        if: github.event_name == 'workflow_dispatch'
         run: |
           python - <<'PY'
           import json
