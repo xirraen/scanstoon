@@ -185,7 +185,7 @@ test('signed signature field in Telegram Mini App HMAC is required and duplicate
   });
   // Telegram bot-token HMAC covers every field except hash, including signature.
   const check = [...params].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
-    .map(([key, value]) => key + '=' + value).join('\\n');
+    .map(([key, value]) => key + '=' + value).join('\n');
   const secret = createHmac('sha256', 'WebAppData').update(token).digest();
   params.set('hash', createHmac('sha256', secret).update(check).digest('hex'));
   const db = {prepare(sql) {
