@@ -24,11 +24,16 @@ async function telegramUser(request, env) {
   const raw=request.headers.get('X-Telegram-Init-Data')||'';
   if (!raw || raw.length>8192) return null;
   const params=new URLSearchParams(raw);
+  const fields=new Set();
+  for (const [key] of params) {
+    if (fields.has(key)) return null;
+    fields.add(key);
+  }
   const hash=params.get('hash');
   const authDate=Number(params.get('auth_date'));
   const now=Math.floor(Date.now()/1000);
   if (!hash || !/^[0-9a-f]{64}$/i.test(hash) || !Number.isSafeInteger(authDate) || authDate>now+60 || now-authDate>86400) return null;
-  const check=Array.from(params.entries()).filter(([k])=>k!=='hash'&&k!=='signature').sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>k+'='+v).join('\n');
+  const check=Array.from(params.entries()).filter(([k])=>k!=='hash').sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>k+'='+v).join('\n');
   const secret=await hmac(textBytes('WebAppData'),env.TELEGRAM_BOT_TOKEN);
   const signature=await hmac(secret,check);
   const digest=Array.from(signature).map(n=>n.toString(16).padStart(2,'0')).join('');

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Script, runInNewContext} from 'node:vm';
 import worker from '../dist/worker.js';
+import { createHmac } from 'node:crypto';
 
 const make = (path, init) => new Request('https://scanstoon.example' + path, init);
 const json = async response => JSON.parse(await response.text());
@@ -172,4 +173,36 @@ test('setup status returns non-sensitive data only', async () => {
 test('static paths reject POST without routing to Telegram', async () => {
   const response = await worker.fetch(make('/unknown', {method:'POST'}), {});
   assert.equal(response.status, 405);
+});
+
+
+test('signed signature field in Telegram Mini App HMAC is required and duplicates fail closed', async () => {
+  const token = 'synthetic-scantoon-bot-token';
+  const params = new URLSearchParams({
+    auth_date: String(Math.floor(Date.now() / 1000)),
+    signature: 'synthetic-ed25519-field',
+    user: JSON.stringify({id: 87654321, first_name: 'Reader'})
+  });
+  // Telegram bot-token HMAC covers every field except hash, including signature.
+  const check = [...params].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+    .map(([key, value]) => key + '=' + value).join('\n');
+  const secret = createHmac('sha256', 'WebAppData').update(token).digest();
+  params.set('hash', createHmac('sha256', secret).update(check).digest('hex'));
+  const db = {prepare(sql) {
+    assert.match(sql, /^INSERT INTO users/);
+    return {bind() {return {async run() {return {meta: {changes: 1}};}};}};
+  }};
+  const request = raw => make('/api/me', {headers: {'X-Telegram-Init-Data': raw}});
+  const env = {TELEGRAM_BOT_TOKEN: token, DB: db};
+  const accepted = await worker.fetch(request(params.toString()), env);
+  assert.equal(accepted.status, 200, 'valid signature field must be included in the hash');
+  assert.equal((await json(accepted)).data.id, 'tg_87654321');
+
+  const tampered = new URLSearchParams(params);
+  tampered.set('signature', 'tampered');
+  assert.equal((await worker.fetch(request(tampered.toString()), env)).status, 401);
+
+  const duplicate = new URLSearchParams(params);
+  duplicate.append('auth_date', String(Math.floor(Date.now() / 1000)));
+  assert.equal((await worker.fetch(request(duplicate.toString()), env)).status, 401);
 });
